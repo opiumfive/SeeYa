@@ -68,7 +68,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                 mPhysicsWorld.onUpdate(pSecondsElapsed);
                 final Body faceBody = (Body)mKit.getUserData();
                 float y = faceBody.getPosition().y;
-                if (y > 140) jumpFace(mKit);
+                if (y > 9) jumpFace(mKit, -2);
             }
         });
 
@@ -83,18 +83,17 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
         if(mPhysicsWorld != null) {
             if(pSceneTouchEvent.isActionDown()) {
-                jumpFace(mKit);
+                jumpFace(mKit, - 10);
                 return true;
             }
         }
         return false;
     }
 
-    private void jumpFace(final Sprite kit) {
-        kit.setRotation(-15);
+    private void jumpFace(final Sprite kit, float pY) {
         final Body faceBody = (Body)kit.getUserData();
 
-        final Vector2 velocity = Vector2Pool.obtain(0, -5);
+        final Vector2 velocity = Vector2Pool.obtain(0, pY);
         faceBody.setLinearVelocity(velocity);
         Vector2Pool.recycle(velocity);
     }
