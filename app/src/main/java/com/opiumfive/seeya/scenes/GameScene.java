@@ -21,18 +21,31 @@ import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.input.touch.TouchEvent;
+import org.andengine.input.touch.detector.ContinuousHoldDetector;
+import org.andengine.input.touch.detector.HoldDetector;
 
 
-public class GameScene extends BaseScene implements IOnSceneTouchListener {
+public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldDetector.IHoldDetectorListener {
+
+    private static final float WATER_LEVEL = 9.0f;
+    private static final float WATER_LEVEL_JUMP_HEIGHT = 2.0f;
+    private static final float TAP_JUMP_HEIGHT = 10.0f;
+    private static final float FLYING_ROTATION_ANGLE = 15.0f;
+    private static final float KIT_X_OFFSET = 100.0f;
+
 
     private PhysicsWorld mPhysicsWorld;
     Sprite mKit;
+    Sprite mWaterAlpha;
+    private ContinuousHoldDetector continuousHoldDetector;
 
     @Override
     public void createScene() {
         mEngine.registerUpdateHandler(new FPSLogger());
 
         setOnSceneTouchListener(this);
+        continuousHoldDetector = new ContinuousHoldDetector(this);
+        mEngine.registerUpdateHandler(continuousHoldDetector);
 
         AutoParallaxBackground autoParallaxBackground = new AutoParallaxBackground(0f, 0f, 0f, 5.0f);
         autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-5.0f, new Sprite(0, SCREEN_HEIGHT - mResourceManager.mParallaxLayerFront.getHeight(), mResourceManager.mParallaxLayerFront, mVertexBufferObjectManager)));
@@ -40,11 +53,13 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-10.0f, new Sprite(0, 100, mResourceManager.mParallaxLayerBack, mVertexBufferObjectManager)));
         setBackground(autoParallaxBackground);
 
-        final float kitX = 100;
+        final float kitX = KIT_X_OFFSET;
         final float kitY = (SCREEN_HEIGHT - mResourceManager.mKit.getHeight() / 2 - 188 - 10);
         mKit = new Sprite(kitX, kitY, mResourceManager.mKit, mVertexBufferObjectManager);
-        //mKit.setRotation(-15);
         attachChild(mKit);
+
+        mWaterAlpha = new Sprite(0, SCREEN_HEIGHT - mResourceManager.mWaterAlpha.getHeight(), mResourceManager.mWaterAlpha, mVertexBufferObjectManager);
+        attachChild(mWaterAlpha);
 
         mPhysicsWorld = new PhysicsWorld(new Vector2(0, SensorManager.GRAVITY_EARTH), false);
         mPhysicsWorld.setContactListener(createContactListener());
@@ -53,11 +68,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         final Body kitBody = PhysicsFactory.createCircleBody(mPhysicsWorld, mKit, BodyDef.BodyType.DynamicBody, kitFixtureDef);
         kitBody.setUserData("bird");
         mKit.setUserData(kitBody);
-
         mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mKit, kitBody, true, false));
 
-
-        /* The actual collision-checking. */
         registerUpdateHandler(new IUpdateHandler() {
 
             @Override
@@ -68,24 +80,42 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                 mPhysicsWorld.onUpdate(pSecondsElapsed);
                 final Body faceBody = (Body)mKit.getUserData();
                 float y = faceBody.getPosition().y;
-                if (y > 9) jumpFace(mKit, -2);
+                if (y > WATER_LEVEL) jumpFace(mKit, -WATER_LEVEL_JUMP_HEIGHT);
+                if (Math.abs(y - WATER_LEVEL) >= WATER_LEVEL_JUMP_HEIGHT) {
+                    if (faceBody.getLinearVelocity().y < 0) {
+                        mKit.setRotation(-FLYING_ROTATION_ANGLE);
+                    } else {
+                        mKit.setRotation(FLYING_ROTATION_ANGLE);
+                    }
+                } else {
+                    mKit.setRotation(0);
+                }
+
             }
         });
 
-        //TODO create CameraScene for 'get ready'
-
-        //TODO create CameraScene for 'game over'
-
-        //TODO create HUD for score
     }
 
     @Override
     public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
         if(mPhysicsWorld != null) {
             if(pSceneTouchEvent.isActionDown()) {
-                jumpFace(mKit, - 10);
+                final Body faceBody = (Body)mKit.getUserData();
+                float y = faceBody.getPosition().y;
+                if (Math.abs(y - WATER_LEVEL) <= WATER_LEVEL_JUMP_HEIGHT) {
+                    jumpFace(mKit, -TAP_JUMP_HEIGHT);
+                }
                 return true;
             }
+            if(pSceneTouchEvent.isActionMove()) {
+                final Body faceBody = (Body)mKit.getUserData();
+                float y = faceBody.getPosition().y;
+                if (Math.abs(y - WATER_LEVEL) <= WATER_LEVEL_JUMP_HEIGHT) {
+                    jumpFace(mKit,  TAP_JUMP_HEIGHT);
+                }
+                return true;
+            }
+
         }
         return false;
     }
@@ -116,5 +146,20 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     @Override
     public void disposeScene() {
         //TODO
+    }
+
+    @Override
+    public void onHoldStarted(HoldDetector pHoldDetector, int pPointerID, float pHoldX, float pHoldY) {
+        jumpFace(mKit,  TAP_JUMP_HEIGHT);
+    }
+
+    @Override
+    public void onHold(HoldDetector pHoldDetector, long pHoldTimeMilliseconds, int pPointerID, float pHoldX, float pHoldY) {
+        jumpFace(mKit,  TAP_JUMP_HEIGHT);
+    }
+
+    @Override
+    public void onHoldFinished(HoldDetector pHoldDetector, long pHoldTimeMilliseconds, int pPointerID, float pHoldX, float pHoldY) {
+        jumpFace(mKit,  TAP_JUMP_HEIGHT);
     }
 }
