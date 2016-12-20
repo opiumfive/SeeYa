@@ -24,6 +24,8 @@ public class ResourceManager {
 
     private BitmapTextureAtlas mBitmapTextureAtlas;
     public ITextureRegion mKit;
+    public ITextureRegion mMineBlue;
+    public ITextureRegion mMineRed;
     public ITextureRegion mWaterAlpha;
 
     public Font mFont1;
@@ -90,6 +92,8 @@ public class ResourceManager {
         mBitmapTextureAtlas = new BitmapTextureAtlas(mActivity.getTextureManager(), 1024, 1024, TextureOptions.BILINEAR);
         mKit = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "kit.png", 0, 0);
         mWaterAlpha = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "wateralpha.png", 0, 73);
+        mMineBlue = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "mine_blue.png", 0, 261);
+        mMineRed = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "mine_red.png", 0, 367);
         //mBirdTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(mBitmapTextureAtlas, mActivity, "Flappy_Birdies.png", 0, 0, 1, 3);
         //mPipeTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(mBitmapTextureAtlas, mActivity, "Flappy_Pipe.png", 0, 125, 2, 1);
         mBitmapTextureAtlas.load();

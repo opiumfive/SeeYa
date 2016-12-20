@@ -8,6 +8,8 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.opiumfive.seeya.SceneManager;
+import com.opiumfive.seeya.pools.MinePool;
+import com.opiumfive.seeya.units.Mine;
 
 import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.entity.scene.IOnSceneTouchListener;
@@ -32,12 +34,15 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
     private static final float TAP_JUMP_HEIGHT = 10.0f;
     private static final float FLYING_ROTATION_ANGLE = 15.0f;
     private static final float KIT_X_OFFSET = 100.0f;
+    private final float KIT_WATER_LEVEL = SCREEN_HEIGHT - mResourceManager.mKit.getHeight() / 2 - 188 - 10;
 
 
     private PhysicsWorld mPhysicsWorld;
     Sprite mKit;
     Sprite mWaterAlpha;
     private ContinuousHoldDetector continuousHoldDetector;
+    private Mine mMine;
+    private MinePool mMinePool;
 
     @Override
     public void createScene() {
@@ -54,21 +59,29 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
         setBackground(autoParallaxBackground);
 
         final float kitX = KIT_X_OFFSET;
-        final float kitY = (SCREEN_HEIGHT - mResourceManager.mKit.getHeight() / 2 - 188 - 10);
+        final float kitY = KIT_WATER_LEVEL;
         mKit = new Sprite(kitX, kitY, mResourceManager.mKit, mVertexBufferObjectManager);
         attachChild(mKit);
 
         mWaterAlpha = new Sprite(0, SCREEN_HEIGHT - mResourceManager.mWaterAlpha.getHeight(), mResourceManager.mWaterAlpha, mVertexBufferObjectManager);
         attachChild(mWaterAlpha);
+        mWaterAlpha.setZIndex(1);
 
         mPhysicsWorld = new PhysicsWorld(new Vector2(0, SensorManager.GRAVITY_EARTH), false);
         mPhysicsWorld.setContactListener(createContactListener());
 
         final FixtureDef kitFixtureDef = PhysicsFactory.createFixtureDef(1, 0, 0);
         final Body kitBody = PhysicsFactory.createCircleBody(mPhysicsWorld, mKit, BodyDef.BodyType.DynamicBody, kitFixtureDef);
-        kitBody.setUserData("bird");
+        kitBody.setUserData("kit");
         mKit.setUserData(kitBody);
         mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mKit, kitBody, true, false));
+
+        mMinePool = new MinePool(mResourceManager.mMineBlue, mVertexBufferObjectManager);
+        mMinePool.batchAllocatePoolItems(10);
+        mMine = mMinePool.obtainPoolItem();
+        attachChild(mMine);
+        mMine.setZIndex(0);
+        sortChildren();
 
         registerUpdateHandler(new IUpdateHandler() {
 
@@ -91,6 +104,17 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
                     mKit.setRotation(0);
                 }
 
+
+                if (mMine.getX() < - SCREEN_WIDTH * 0.1f) {
+                    detachChild(mMine);
+                    mMinePool.recyclePoolItem(mMine);
+                    mMinePool.shufflePoolItems();
+
+                    mMine = mMinePool.obtainPoolItem();
+                    attachChild(mMine);
+                    mMine.setZIndex(0);
+                    sortChildren();
+                }
             }
         });
 
