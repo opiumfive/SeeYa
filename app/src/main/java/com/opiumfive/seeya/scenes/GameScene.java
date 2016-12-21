@@ -30,11 +30,13 @@ import org.andengine.input.touch.detector.HoldDetector;
 public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldDetector.IHoldDetectorListener {
 
     private static final float WATER_LEVEL = 9.0f;
-    private static final float WATER_LEVEL_JUMP_HEIGHT = 2.0f;
-    private static final float TAP_JUMP_HEIGHT = 10.0f;
+    private static final float WATER_LEVEL_JUMP_HEIGHT = 0.3f;
+    private static final float TAP_JUMP_HEIGHT = 7.0f;
     private static final float FLYING_ROTATION_ANGLE = 15.0f;
     private static final float KIT_X_OFFSET = 100.0f;
     private final float KIT_WATER_LEVEL = SCREEN_HEIGHT - mResourceManager.mKit.getHeight() / 2 - 188 - 10;
+
+    private boolean mUsualJump = true;
 
 
     private PhysicsWorld mPhysicsWorld;
@@ -62,12 +64,13 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
         final float kitY = KIT_WATER_LEVEL;
         mKit = new Sprite(kitX, kitY, mResourceManager.mKit, mVertexBufferObjectManager);
         attachChild(mKit);
+        mKit.setPosition(kitX, SCREEN_HEIGHT - mResourceManager.mKit.getHeight() / 2 - 188 - 10);
 
         mWaterAlpha = new Sprite(0, SCREEN_HEIGHT - mResourceManager.mWaterAlpha.getHeight(), mResourceManager.mWaterAlpha, mVertexBufferObjectManager);
         attachChild(mWaterAlpha);
         mWaterAlpha.setZIndex(1);
 
-        mPhysicsWorld = new PhysicsWorld(new Vector2(0, SensorManager.GRAVITY_EARTH), false);
+        mPhysicsWorld = new PhysicsWorld(new Vector2(0, 7), false);
         mPhysicsWorld.setContactListener(createContactListener());
 
         final FixtureDef kitFixtureDef = PhysicsFactory.createFixtureDef(1, 0, 0);
@@ -93,19 +96,22 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
                 mPhysicsWorld.onUpdate(pSecondsElapsed);
                 final Body faceBody = (Body)mKit.getUserData();
                 float y = faceBody.getPosition().y;
-                if (y > WATER_LEVEL) jumpFace(mKit, -WATER_LEVEL_JUMP_HEIGHT);
+
                 if (Math.abs(y - WATER_LEVEL) >= WATER_LEVEL_JUMP_HEIGHT) {
-                    if (faceBody.getLinearVelocity().y < 0) {
-                        mKit.setRotation(-FLYING_ROTATION_ANGLE);
+                    if (y > WATER_LEVEL) {
+                        setGravity(mUsualJump ? -7*4 : -7);
                     } else {
-                        mKit.setRotation(FLYING_ROTATION_ANGLE);
+                        setGravity(7);
                     }
                 } else {
-                    mKit.setRotation(0);
+                    setGravity(0);
+                    if (y > WATER_LEVEL) {
+                        jumpFace(mKit, 0);
+                    }
                 }
+                mKit.setRotation(faceBody.getLinearVelocity().y * FLYING_ROTATION_ANGLE / 7.0f);
 
-
-                if (mMine.getX() < - SCREEN_WIDTH * 0.1f) {
+                if (mMine.getX() < - SCREEN_WIDTH * 0.2f) {
                     detachChild(mMine);
                     mMinePool.recyclePoolItem(mMine);
                     mMinePool.shufflePoolItems();
@@ -120,10 +126,17 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
 
     }
 
+    public void setGravity(float gy) {
+        final Vector2 gravity = Vector2Pool.obtain(0, gy);
+        mPhysicsWorld.setGravity(gravity);
+        Vector2Pool.recycle(gravity);
+    }
+
     @Override
     public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
         if(mPhysicsWorld != null) {
             if(pSceneTouchEvent.isActionDown()) {
+                mUsualJump = true;
                 final Body faceBody = (Body)mKit.getUserData();
                 float y = faceBody.getPosition().y;
                 if (Math.abs(y - WATER_LEVEL) <= WATER_LEVEL_JUMP_HEIGHT) {
@@ -132,6 +145,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
                 return true;
             }
             if(pSceneTouchEvent.isActionMove()) {
+                mUsualJump = false;
                 final Body faceBody = (Body)mKit.getUserData();
                 float y = faceBody.getPosition().y;
                 if (Math.abs(y - WATER_LEVEL) <= WATER_LEVEL_JUMP_HEIGHT) {
