@@ -47,7 +47,7 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
         final float kitX = 100;
         final float kitY = (SCREEN_HEIGHT - mResourceManager.mKit.getHeight()) / 2;
         Sprite kit = new Sprite(kitX, kitY, mResourceManager.mKit, mVertexBufferObjectManager);
-        //mKit.setRotation(-15);
+        kit.setRotation(-15);
         attachChild(kit);
 
         mMenuScene = createMenuScene();
@@ -65,7 +65,6 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
                 return true;
 
             case MENU_RATE:
-                //TODO implement
                 return true;
 
             case MENU_EXTRAS:
@@ -73,7 +72,6 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
                 return true;
 
             case MENU_QUIT:
-            /* End Activity. */
                 mActivity.finish();
                 return true;
 

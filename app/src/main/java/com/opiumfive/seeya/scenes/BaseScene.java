@@ -11,6 +11,7 @@ import org.andengine.entity.scene.Scene;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 public abstract class BaseScene extends Scene {
+    
     protected final int SCREEN_WIDTH = GameActivity.CAMERA_WIDTH;
     protected final int SCREEN_HEIGHT = GameActivity.CAMERA_HEIGHT;
 

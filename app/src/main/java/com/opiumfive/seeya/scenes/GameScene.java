@@ -1,6 +1,5 @@
 package com.opiumfive.seeya.scenes;
 
-import android.hardware.SensorManager;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -10,7 +9,6 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.opiumfive.seeya.SceneManager;
 import com.opiumfive.seeya.pools.MinePool;
 import com.opiumfive.seeya.units.Mine;
-
 import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
@@ -23,11 +21,9 @@ import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.input.touch.TouchEvent;
-import org.andengine.input.touch.detector.ContinuousHoldDetector;
-import org.andengine.input.touch.detector.HoldDetector;
 
 
-public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldDetector.IHoldDetectorListener {
+public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
     private static final float WATER_LEVEL = 9.0f;
     private static final float WATER_LEVEL_JUMP_HEIGHT = 0.3f;
@@ -41,9 +37,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
 
 
     private PhysicsWorld mPhysicsWorld;
-    Sprite mKit;
-    Sprite mWaterAlpha;
-    private ContinuousHoldDetector continuousHoldDetector;
+    private Sprite mKit;
+    private Sprite mWaterAlpha;
     private Mine mMine;
     private MinePool mMinePool;
 
@@ -52,8 +47,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
         mEngine.registerUpdateHandler(new FPSLogger());
 
         setOnSceneTouchListener(this);
-        continuousHoldDetector = new ContinuousHoldDetector(this);
-        mEngine.registerUpdateHandler(continuousHoldDetector);
 
         AutoParallaxBackground autoParallaxBackground = new AutoParallaxBackground(0f, 0f, 0f, 5.0f);
         autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-5.0f, new Sprite(0, SCREEN_HEIGHT - mResourceManager.mParallaxLayerFront.getHeight(), mResourceManager.mParallaxLayerFront, mVertexBufferObjectManager)));
@@ -101,7 +94,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
                 if (Math.abs(y - WATER_LEVEL) >= WATER_LEVEL_JUMP_HEIGHT) {
                     if (y > WATER_LEVEL) {
                         setGravity(mUsualJump ? -7*4 : -7);
-
                     } else {
                         setGravity(7);
                     }
@@ -167,7 +159,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
 
     private void jumpFace(final Sprite kit, float pY) {
         final Body faceBody = (Body)kit.getUserData();
-
         final Vector2 velocity = Vector2Pool.obtain(0, pY);
         faceBody.setLinearVelocity(velocity);
         Vector2Pool.recycle(velocity);
@@ -191,20 +182,5 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
     @Override
     public void disposeScene() {
         //TODO
-    }
-
-    @Override
-    public void onHoldStarted(HoldDetector pHoldDetector, int pPointerID, float pHoldX, float pHoldY) {
-        jumpFace(mKit,  TAP_JUMP_HEIGHT);
-    }
-
-    @Override
-    public void onHold(HoldDetector pHoldDetector, long pHoldTimeMilliseconds, int pPointerID, float pHoldX, float pHoldY) {
-        jumpFace(mKit,  TAP_JUMP_HEIGHT);
-    }
-
-    @Override
-    public void onHoldFinished(HoldDetector pHoldDetector, long pHoldTimeMilliseconds, int pPointerID, float pHoldX, float pHoldY) {
-        jumpFace(mKit,  TAP_JUMP_HEIGHT);
     }
 }
