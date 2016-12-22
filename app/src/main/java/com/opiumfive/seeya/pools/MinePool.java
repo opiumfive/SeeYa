@@ -6,23 +6,30 @@ import com.opiumfive.seeya.units.Mine;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.util.adt.pool.GenericPool;
+import org.andengine.util.math.MathUtils;
+
+import java.util.Random;
 
 
 public class MinePool extends GenericPool<Mine> {
 
     private ITextureRegion mMineTextureRegion;
+    private ITextureRegion mRedMineTextureRegion;
     private VertexBufferObjectManager mVertexBufferObjectManager;
     private int mMineIndex;
 
-    public MinePool(ITextureRegion pMineTextureRegion, VertexBufferObjectManager pVertexBufferObjectManager) {
+    public MinePool(ITextureRegion pMineTextureRegion, ITextureRegion pRedMineTextureRegion, VertexBufferObjectManager pVertexBufferObjectManager) {
         super();
-        this.mMineTextureRegion = pMineTextureRegion;
-        this.mVertexBufferObjectManager = pVertexBufferObjectManager;
+        mMineTextureRegion = pMineTextureRegion;
+        mRedMineTextureRegion = pRedMineTextureRegion;
+        mVertexBufferObjectManager = pVertexBufferObjectManager;
     }
 
     @Override
     protected Mine onAllocatePoolItem() {
-        return new Mine(mMineTextureRegion, mVertexBufferObjectManager);
+        Random random = new Random();
+        boolean isRed = random.nextBoolean();
+        return new Mine(isRed ? mRedMineTextureRegion : mMineTextureRegion, mVertexBufferObjectManager, isRed);
     }
 
     @Override

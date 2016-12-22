@@ -14,15 +14,15 @@ public class Mine extends Sprite {
     private static final float DEMO_VELOCITY = 150.0f;
     private static final float DEMO_POSITION = 1.1f*CAMERA_WIDTH;
     private static final float MINE_WATER_LEVEL = 246;
+    private static final float MINE_UNDERWATER_LEVEL = 350;
 
     private final PhysicsHandler mPhysicsHandler;
 
-    public Mine(ITextureRegion pTextureRegion, VertexBufferObjectManager pVertexBufferObjectManager) {
-        super(DEMO_POSITION, MINE_WATER_LEVEL, pTextureRegion, pVertexBufferObjectManager);
+    public Mine(ITextureRegion pTextureRegion, VertexBufferObjectManager pVertexBufferObjectManager, boolean isRed) {
+        super(DEMO_POSITION, isRed ? MINE_UNDERWATER_LEVEL : MINE_WATER_LEVEL, pTextureRegion, pVertexBufferObjectManager);
         mPhysicsHandler = new PhysicsHandler(this);
         registerUpdateHandler(mPhysicsHandler);
         mPhysicsHandler.setVelocity(-DEMO_VELOCITY, 0);
-        //setPosition(DEMO_POSITION, MINE_WATER_LEVEL);
     }
 
 }

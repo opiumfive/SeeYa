@@ -37,6 +37,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
     private final float KIT_WATER_LEVEL = SCREEN_HEIGHT - mResourceManager.mKit.getHeight() / 2 - 188 - 10;
 
     private boolean mUsualJump = true;
+    private boolean mDiveMade = false;
 
 
     private PhysicsWorld mPhysicsWorld;
@@ -79,7 +80,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
         mKit.setUserData(kitBody);
         mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mKit, kitBody, true, false));
 
-        mMinePool = new MinePool(mResourceManager.mMineBlue, mVertexBufferObjectManager);
+        mMinePool = new MinePool(mResourceManager.mMineBlue, mResourceManager.mMineRed, mVertexBufferObjectManager);
         mMinePool.batchAllocatePoolItems(10);
         mMine = mMinePool.obtainPoolItem();
         attachChild(mMine);
@@ -100,14 +101,20 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, HoldD
                 if (Math.abs(y - WATER_LEVEL) >= WATER_LEVEL_JUMP_HEIGHT) {
                     if (y > WATER_LEVEL) {
                         setGravity(mUsualJump ? -7*4 : -7);
+
                     } else {
                         setGravity(7);
                     }
-                } else {
-                    setGravity(0);
-                    if (y > WATER_LEVEL) {
-                        jumpFace(mKit, 0);
+                    if (y - WATER_LEVEL >= WATER_LEVEL_JUMP_HEIGHT*2) {
+                        mDiveMade = true;
                     }
+
+                } else {
+                    if (y > WATER_LEVEL - WATER_LEVEL_JUMP_HEIGHT && mDiveMade) {
+                        jumpFace(mKit, 0);
+                        mDiveMade = false;
+                    }
+                    setGravity(0);
                 }
                 mKit.setRotation(faceBody.getLinearVelocity().y * FLYING_ROTATION_ANGLE / 7.0f);
 

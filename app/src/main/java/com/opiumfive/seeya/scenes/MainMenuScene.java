@@ -53,8 +53,7 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
         mMenuScene = createMenuScene();
         mSubMenuScene = createSubMenuScene();
 
-        /* Attach the menu. */
-        this.setChildScene(mMenuScene, false, true, true);
+        setChildScene(mMenuScene, false, true, true);
     }
 
     @Override
