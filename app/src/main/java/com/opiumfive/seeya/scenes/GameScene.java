@@ -92,16 +92,16 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
             @Override
             public void onUpdate(float pSecondsElapsed) {
                 mPhysicsWorld.onUpdate(pSecondsElapsed);
-                final Body faceBody = (Body)mKit.getUserData();
+                final Body faceBody = (Body) mKit.getUserData();
                 float y = faceBody.getPosition().y;
 
                 if (Math.abs(y - WATER_LEVEL) >= WATER_LEVEL_JUMP_HEIGHT) {
                     if (y > WATER_LEVEL) {
-                        setGravity(mUsualJump ? -7*4 : -7);
+                        setGravity(mUsualJump ? -7 * 4 : -7);
                     } else {
                         setGravity(7);
                     }
-                    if (y - WATER_LEVEL >= WATER_LEVEL_JUMP_HEIGHT*2) {
+                    if (y - WATER_LEVEL >= WATER_LEVEL_JUMP_HEIGHT * 2) {
                         mDiveMade = true;
                     }
 
@@ -114,7 +114,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                 }
                 mKit.setRotation(faceBody.getLinearVelocity().y * FLYING_ROTATION_ANGLE / 7.0f);
 
-                if (mMine.getX() < - SCREEN_WIDTH * 0.2f) {
+                if (mMine.getX() < -SCREEN_WIDTH * 0.2f) {
                     detachChild(mMine);
                     mMinePool.recyclePoolItem(mMine);
                     mMinePool.shufflePoolItems();
