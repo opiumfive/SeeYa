@@ -6,7 +6,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.opiumfive.seeya.SceneManager;
+import com.opiumfive.seeya.managers.SceneManager;
 import com.opiumfive.seeya.pools.MinePool;
 import com.opiumfive.seeya.units.Mine;
 import org.andengine.engine.handler.IUpdateHandler;
@@ -14,6 +14,7 @@ import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.AutoParallaxBackground;
 import org.andengine.entity.scene.background.ParallaxBackground;
+import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.extension.physics.box2d.PhysicsConnector;
@@ -37,7 +38,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
 
     private PhysicsWorld mPhysicsWorld;
-    private Sprite mKit;
+    //private Sprite mKit;
+    private AnimatedSprite mKit;
     private Sprite mWaterAlpha;
     private Mine mMine;
     private MinePool mMinePool;
@@ -56,7 +58,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
         final float kitX = KIT_X_OFFSET;
         final float kitY = KIT_WATER_LEVEL;
-        mKit = new Sprite(kitX, kitY, mResourceManager.mKit, mVertexBufferObjectManager);
+        //mKit = new Sprite(kitX, kitY, mResourceManager.mKit, mVertexBufferObjectManager);
+        mKit = new AnimatedSprite(kitX, kitY, mResourceManager.mKitSwimAnim, mVertexBufferObjectManager);
+        mKit.animate(17);
         attachChild(mKit);
         mKit.setPosition(kitX, SCREEN_HEIGHT - mResourceManager.mKit.getHeight() / 2 - 188 - 10);
 

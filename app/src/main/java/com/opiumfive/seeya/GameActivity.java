@@ -1,5 +1,8 @@
 package com.opiumfive.seeya;
 
+import com.opiumfive.seeya.managers.ResourceManager;
+import com.opiumfive.seeya.managers.SceneManager;
+
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;

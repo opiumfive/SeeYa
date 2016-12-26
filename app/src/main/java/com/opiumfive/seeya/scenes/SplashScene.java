@@ -1,10 +1,9 @@
 package com.opiumfive.seeya.scenes;
 
 
-import com.opiumfive.seeya.SceneManager;
+import com.opiumfive.seeya.managers.SceneManager;
 
 import org.andengine.entity.scene.background.Background;
-import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
 import org.andengine.util.HorizontalAlign;

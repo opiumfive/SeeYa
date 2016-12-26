@@ -1,4 +1,4 @@
-package com.opiumfive.seeya;
+package com.opiumfive.seeya.managers;
 
 
 import com.opiumfive.seeya.scenes.BaseScene;

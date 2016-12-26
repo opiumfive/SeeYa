@@ -1,8 +1,10 @@
-package com.opiumfive.seeya;
+package com.opiumfive.seeya.managers;
 
 
 import android.graphics.Color;
 import android.graphics.Typeface;
+
+import com.opiumfive.seeya.GameActivity;
 
 import org.andengine.opengl.font.Font;
 import org.andengine.opengl.font.FontFactory;
@@ -11,6 +13,7 @@ import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
+import org.andengine.opengl.texture.region.TiledTextureRegion;
 
 public class ResourceManager {
     private static final ResourceManager INSTANCE = new ResourceManager();
@@ -23,7 +26,9 @@ public class ResourceManager {
     public ITextureRegion mParallaxLayerFront;
 
     private BitmapTextureAtlas mBitmapTextureAtlas;
+    private BitmapTextureAtlas mKitAnimAtlas;
     public ITextureRegion mKit;
+    public TiledTextureRegion mKitSwimAnim;
     public ITextureRegion mMineBlue;
     public ITextureRegion mMineRed;
     public ITextureRegion mWaterAlpha;
@@ -94,11 +99,11 @@ public class ResourceManager {
         mWaterAlpha = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "wateralpha.png", 0, 73);
         mMineBlue = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "mine_blue.png", 0, 261);
         mMineRed = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "mine_red.png", 0, 367);
-        //mBirdTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(mBitmapTextureAtlas, mActivity, "Flappy_Birdies.png", 0, 0, 1, 3);
-        //mPipeTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(mBitmapTextureAtlas, mActivity, "Flappy_Pipe.png", 0, 125, 2, 1);
         mBitmapTextureAtlas.load();
 
-
+        mKitAnimAtlas = new BitmapTextureAtlas(mActivity.getTextureManager(), 1024, 1024, TextureOptions.BILINEAR);
+        mKitSwimAnim = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(mKitAnimAtlas, mActivity, "kit_underwater_anim.png", 0, 0, 5, 5);
+        mKitAnimAtlas.load();
     }
 
     public void unloadGameResources() {

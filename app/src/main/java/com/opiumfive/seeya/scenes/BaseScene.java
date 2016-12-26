@@ -2,8 +2,8 @@ package com.opiumfive.seeya.scenes;
 
 
 import com.opiumfive.seeya.GameActivity;
-import com.opiumfive.seeya.ResourceManager;
-import com.opiumfive.seeya.SceneManager;
+import com.opiumfive.seeya.managers.ResourceManager;
+import com.opiumfive.seeya.managers.SceneManager;
 
 import org.andengine.engine.Engine;
 import org.andengine.engine.camera.Camera;
@@ -11,7 +11,7 @@ import org.andengine.entity.scene.Scene;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 public abstract class BaseScene extends Scene {
-    
+
     protected final int SCREEN_WIDTH = GameActivity.CAMERA_WIDTH;
     protected final int SCREEN_HEIGHT = GameActivity.CAMERA_HEIGHT;
 

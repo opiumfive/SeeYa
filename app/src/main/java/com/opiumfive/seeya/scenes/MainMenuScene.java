@@ -3,10 +3,9 @@ package com.opiumfive.seeya.scenes;
 
 import android.opengl.GLES20;
 
-import com.opiumfive.seeya.SceneManager;
+import com.opiumfive.seeya.managers.SceneManager;
 
 import org.andengine.entity.scene.background.AutoParallaxBackground;
-import org.andengine.entity.scene.background.Background;
 import org.andengine.entity.scene.background.ParallaxBackground;
 import org.andengine.entity.scene.menu.MenuScene;
 import org.andengine.entity.scene.menu.item.IMenuItem;
