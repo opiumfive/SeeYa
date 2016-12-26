@@ -60,7 +60,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         final float kitY = KIT_WATER_LEVEL;
         //mKit = new Sprite(kitX, kitY, mResourceManager.mKit, mVertexBufferObjectManager);
         mKit = new AnimatedSprite(kitX, kitY, mResourceManager.mKitSwimAnim, mVertexBufferObjectManager);
-        mKit.animate(17);
+        mKit.animate(33);
         attachChild(mKit);
         mKit.setPosition(kitX, SCREEN_HEIGHT - mResourceManager.mKit.getHeight() / 2 - 188 - 10);
 
