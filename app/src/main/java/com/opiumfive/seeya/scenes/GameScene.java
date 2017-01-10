@@ -1,6 +1,8 @@
 package com.opiumfive.seeya.scenes;
 
 
+import android.widget.Toast;
+
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -35,6 +37,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
     private boolean mUsualJump = true;
     private boolean mDiveMade = false;
+    private boolean mUpMade = false;
 
 
     private PhysicsWorld mPhysicsWorld;
@@ -43,6 +46,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private Sprite mWaterAlpha;
     private Mine mMine;
     private MinePool mMinePool;
+    float mSecsTotal;
 
     @Override
     public void createScene() {
@@ -69,7 +73,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         attachChild(mWaterAlpha);
         mWaterAlpha.setZIndex(1);
 
-        mPhysicsWorld = new PhysicsWorld(new Vector2(0, 7), false);
+        mPhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
         mPhysicsWorld.setContactListener(createContactListener());
 
         final FixtureDef kitFixtureDef = PhysicsFactory.createFixtureDef(1, 0, 0);
@@ -98,10 +102,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
                 if (Math.abs(y - WATER_LEVEL) >= WATER_LEVEL_JUMP_HEIGHT) {
                     if (y > WATER_LEVEL) {
-                        setGravity(mUsualJump ? -7 * 4 : -7);
+                        setGravity(((mDiveMade && mUsualJump) || (mUpMade && !mUsualJump)) ? -7 * 4 : -7);
                         mKit.animate(33);
                     } else {
-                        mKit.stopAnimation();
+                        mKit.stopAnimation(7);
+                        mUpMade = true;
+                        mDiveMade = false;
                         setGravity(7);
                     }
                     if (y - WATER_LEVEL >= WATER_LEVEL_JUMP_HEIGHT * 2) {
@@ -109,9 +115,10 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                     }
 
                 } else {
-                    if (y > WATER_LEVEL - WATER_LEVEL_JUMP_HEIGHT && mDiveMade) {
+                    if (y > WATER_LEVEL - WATER_LEVEL_JUMP_HEIGHT && ((mDiveMade && mUsualJump) || (mDiveMade && mUpMade && !mUsualJump))) {
                         jumpFace(mKit, 0);
-                        mDiveMade = false;
+                        if (mDiveMade) mDiveMade = false;
+                        if (mUpMade) mUpMade = false;
                     }
                     setGravity(0);
                 }
@@ -142,20 +149,26 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
         if(mPhysicsWorld != null) {
             if(pSceneTouchEvent.isActionDown()) {
-                mUsualJump = true;
-                final Body faceBody = (Body)mKit.getUserData();
-                float y = faceBody.getPosition().y;
-                if (Math.abs(y - WATER_LEVEL) <= WATER_LEVEL_JUMP_HEIGHT) {
-                    jumpFace(mKit, -TAP_JUMP_HEIGHT);
-                }
+                mSecsTotal = mEngine.getSecondsElapsedTotal();
                 return true;
             }
-            if(pSceneTouchEvent.isActionMove()) {
-                mUsualJump = false;
-                final Body faceBody = (Body)mKit.getUserData();
-                float y = faceBody.getPosition().y;
-                if (Math.abs(y - WATER_LEVEL) <= WATER_LEVEL_JUMP_HEIGHT) {
-                    jumpFace(mKit,  TAP_JUMP_HEIGHT);
+
+            if(pSceneTouchEvent.isActionUp()) {
+                float secDifference = mEngine.getSecondsElapsedTotal() - mSecsTotal;
+                if (secDifference > 0.3f) {
+                    mUsualJump = false;
+                    final Body faceBody = (Body) mKit.getUserData();
+                    float y = faceBody.getPosition().y;
+                    if (Math.abs(y - WATER_LEVEL) <= WATER_LEVEL_JUMP_HEIGHT) {
+                        jumpFace(mKit, TAP_JUMP_HEIGHT * secDifference * 2);
+                    }
+                } else {
+                    mUsualJump = true;
+                    final Body faceBody = (Body)mKit.getUserData();
+                    float y = faceBody.getPosition().y;
+                    if (Math.abs(y - WATER_LEVEL) <= WATER_LEVEL_JUMP_HEIGHT) {
+                        jumpFace(mKit, -TAP_JUMP_HEIGHT);
+                    }
                 }
                 return true;
             }
