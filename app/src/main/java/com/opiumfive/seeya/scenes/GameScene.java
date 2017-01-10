@@ -61,6 +61,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         //mKit = new Sprite(kitX, kitY, mResourceManager.mKit, mVertexBufferObjectManager);
         mKit = new AnimatedSprite(kitX, kitY, mResourceManager.mKitSwimAnim, mVertexBufferObjectManager);
         mKit.animate(33);
+
         attachChild(mKit);
         mKit.setPosition(kitX, SCREEN_HEIGHT - mResourceManager.mKit.getHeight() / 2 - 188 - 10);
 
@@ -98,7 +99,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                 if (Math.abs(y - WATER_LEVEL) >= WATER_LEVEL_JUMP_HEIGHT) {
                     if (y > WATER_LEVEL) {
                         setGravity(mUsualJump ? -7 * 4 : -7);
+                        mKit.animate(33);
                     } else {
+                        mKit.stopAnimation();
                         setGravity(7);
                     }
                     if (y - WATER_LEVEL >= WATER_LEVEL_JUMP_HEIGHT * 2) {
