@@ -33,6 +33,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private static final float TAP_JUMP_HEIGHT = 7.0f;
     private static final float FLYING_ROTATION_ANGLE = 15.0f;
     private static final float KIT_X_OFFSET = 100.0f;
+    private static final float UPDOWN_SEC_DIFFERENCE = 0.3f;
+    private static final float UPDOWN_MAX_SEC_DIFFERENCE = 2.0f;
     private final float KIT_WATER_LEVEL = SCREEN_HEIGHT - mResourceManager.mKit.getHeight() / 2 - 188 - 10;
 
     private boolean mUsualJump = true;
@@ -47,10 +49,13 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private Mine mMine;
     private MinePool mMinePool;
     float mSecsTotal;
+    float mDiveFactor = 1.0f;
 
     @Override
     public void createScene() {
         mEngine.registerUpdateHandler(new FPSLogger());
+
+        //mCamera.set
 
         setOnSceneTouchListener(this);
 
@@ -123,6 +128,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                     setGravity(0);
                 }
                 mKit.setRotation(faceBody.getLinearVelocity().y * FLYING_ROTATION_ANGLE / 7.0f);
+                if (mDiveFactor > 1.5f) {
+                    float scale = 1f - mDiveFactor / (UPDOWN_MAX_SEC_DIFFERENCE * 2.0f);
+                    mKit.setScale(scale);
+                } else {
+                    mKit.setScale(1.0f);
+                }
 
                 if (mMine.getX() < -SCREEN_WIDTH * 0.2f) {
                     detachChild(mMine);
@@ -155,14 +166,20 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
             if(pSceneTouchEvent.isActionUp()) {
                 float secDifference = mEngine.getSecondsElapsedTotal() - mSecsTotal;
-                if (secDifference > 0.3f) {
+                if (secDifference > UPDOWN_SEC_DIFFERENCE) {
                     mUsualJump = false;
                     final Body faceBody = (Body) mKit.getUserData();
                     float y = faceBody.getPosition().y;
+                    if (secDifference > UPDOWN_MAX_SEC_DIFFERENCE) secDifference = UPDOWN_MAX_SEC_DIFFERENCE;
+                    mDiveFactor = secDifference * 2;
                     if (Math.abs(y - WATER_LEVEL) <= WATER_LEVEL_JUMP_HEIGHT) {
-                        jumpFace(mKit, TAP_JUMP_HEIGHT * secDifference * 2);
+                        jumpFace(mKit, TAP_JUMP_HEIGHT * mDiveFactor);
                     }
+
+                    mDiveFactor = secDifference * 2;
                 } else {
+                    //mCamera.se
+
                     mUsualJump = true;
                     final Body faceBody = (Body)mKit.getUserData();
                     float y = faceBody.getPosition().y;

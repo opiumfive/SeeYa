@@ -4,6 +4,7 @@ import com.opiumfive.seeya.managers.ResourceManager;
 import com.opiumfive.seeya.managers.SceneManager;
 
 import org.andengine.engine.camera.Camera;
+import org.andengine.engine.camera.SmoothCamera;
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.engine.options.EngineOptions;
@@ -19,13 +20,13 @@ public class GameActivity extends SimpleBaseGameActivity {
     public static final int CAMERA_WIDTH = 800;
     public static final int CAMERA_HEIGHT = 480;
 
-    private Camera mCamera;
+    private SmoothCamera mCamera;
     private ResourceManager mResourceManager;
     private SceneManager mSceneManager;
 
     @Override
     public EngineOptions onCreateEngineOptions() {
-        mCamera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+        mCamera = new SmoothCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT, 10f, 10f, 3f);
         final EngineOptions engineOptions = new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new FillResolutionPolicy(), mCamera);
         //engineOptions.getAudioOptions().setNeedsSound(true).setNeedsMusic(true);
         engineOptions.setWakeLockOptions(WakeLockOptions.SCREEN_ON);

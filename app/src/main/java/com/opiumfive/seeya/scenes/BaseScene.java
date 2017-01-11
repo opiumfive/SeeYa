@@ -7,6 +7,7 @@ import com.opiumfive.seeya.managers.SceneManager;
 
 import org.andengine.engine.Engine;
 import org.andengine.engine.camera.Camera;
+import org.andengine.engine.camera.SmoothCamera;
 import org.andengine.entity.scene.Scene;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
@@ -17,7 +18,7 @@ public abstract class BaseScene extends Scene {
 
     protected GameActivity mActivity;
     protected Engine mEngine;
-    protected Camera mCamera;
+    protected SmoothCamera mCamera;
     protected VertexBufferObjectManager mVertexBufferObjectManager;
     protected ResourceManager mResourceManager;
     protected SceneManager mSceneManager;
@@ -27,7 +28,8 @@ public abstract class BaseScene extends Scene {
         mActivity = mResourceManager.mActivity;
         mVertexBufferObjectManager = mActivity.getVertexBufferObjectManager();
         mEngine = mActivity.getEngine();
-        mCamera = mEngine.getCamera();
+        mCamera = (SmoothCamera) mEngine.getCamera();
+
         mSceneManager = SceneManager.getInstance();
         createScene();
     }
