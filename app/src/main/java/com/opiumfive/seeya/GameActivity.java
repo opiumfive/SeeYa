@@ -27,6 +27,7 @@ public class GameActivity extends SimpleBaseGameActivity {
     @Override
     public EngineOptions onCreateEngineOptions() {
         mCamera = new SmoothCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT, 10f, 10f, 3f);
+        mCamera.setBounds(0f, 0f, CAMERA_WIDTH, CAMERA_HEIGHT);
         final EngineOptions engineOptions = new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new FillResolutionPolicy(), mCamera);
         //engineOptions.getAudioOptions().setNeedsSound(true).setNeedsMusic(true);
         engineOptions.setWakeLockOptions(WakeLockOptions.SCREEN_ON);

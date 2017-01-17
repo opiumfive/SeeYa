@@ -19,7 +19,7 @@ public class Mine extends AnimatedSprite {
     private static final float DEMO_POSITION = 1.1f*CAMERA_WIDTH;
     private static final float MINE_WATER_LEVEL = 246;
 
-    private static final float VELOCITY_FACTOR = 50f;
+    private static final float VELOCITY_FACTOR = 30f;
     //private static final float MINE_UNDERWATER_LEVEL = 350;
 
     private final PhysicsHandler mPhysicsHandler;
@@ -32,7 +32,7 @@ public class Mine extends AnimatedSprite {
     }
 
     public void setVelocity(float velocity) {
-        float velo = -30f * velocity;
+        float velo = - VELOCITY_FACTOR * velocity;
         mPhysicsHandler.setVelocity(velo, 0);
     }
 

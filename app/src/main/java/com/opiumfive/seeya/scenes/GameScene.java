@@ -1,6 +1,7 @@
 package com.opiumfive.seeya.scenes;
 
 
+import android.util.Log;
 import android.widget.Toast;
 
 import com.badlogic.gdx.math.Vector2;
@@ -54,11 +55,14 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     float mSecsTotal;
     float mDiveFactor = 1.0f;
 
+    private float mCameraZoomFactor;
+
     @Override
     public void createScene() {
         mEngine.registerUpdateHandler(new FPSLogger());
         mGameSpeed = 5f;
-        //mCamera.set
+        mCameraZoomFactor = 1f;
+        mCamera.setZoomFactor(mCameraZoomFactor);
 
         setOnSceneTouchListener(this);
 
@@ -82,6 +86,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         mWaterAlpha = new Sprite(0, SCREEN_HEIGHT - mResourceManager.mWaterAlpha.getHeight(), mResourceManager.mWaterAlpha, mVertexBufferObjectManager);
         attachChild(mWaterAlpha);
         mWaterAlpha.setZIndex(1);
+        mWaterAlpha.setScaleCenterY(-mWaterAlpha.getHeight()/4f);
 
         mPhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
         mPhysicsWorld.setContactListener(createContactListener());
@@ -119,6 +124,23 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                 mPhysicsWorld.onUpdate(pSecondsElapsed);
                 final Body faceBody = (Body) mKit.getUserData();
                 float y = faceBody.getPosition().y;
+                float yy = mKit.getY();
+
+                if (yy < 0f || yy + 100 > 480f) {
+
+                    if ( yy + 100 > 480f) {
+                        mCameraZoomFactor = 240f / (yy + 100 - 240f);
+                    } else {
+                        mCameraZoomFactor = 240f / (240 - yy);
+                    }
+                    mCamera.setZoomFactor(mCameraZoomFactor);
+                    mWaterAlpha.setScale(1f + (1f - mCameraZoomFactor) * 3);
+                } else {
+                    mCameraZoomFactor = 1f;
+                    mCamera.setZoomFactor(mCameraZoomFactor);
+                    mWaterAlpha.setScale(1f + (1f - mCameraZoomFactor) * 3);
+
+                }
 
                 if (Math.abs(y - WATER_LEVEL) >= WATER_LEVEL_JUMP_HEIGHT) {
                     if (y > WATER_LEVEL) {
@@ -190,8 +212,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
                     mDiveFactor = secDifference * 2;
                 } else {
-                    //mCamera.se
-
                     mUsualJump = true;
                     final Body faceBody = (Body)mKit.getUserData();
                     float y = faceBody.getPosition().y;
