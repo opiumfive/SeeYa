@@ -41,6 +41,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private boolean mDiveMade = false;
     private boolean mUpMade = false;
 
+    private float mGameSpeed = 5f;
+    private float mLastSecs = 0f;
+
 
     private PhysicsWorld mPhysicsWorld;
     //private Sprite mKit;
@@ -54,16 +57,18 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     @Override
     public void createScene() {
         mEngine.registerUpdateHandler(new FPSLogger());
-
+        mGameSpeed = 5f;
         //mCamera.set
 
         setOnSceneTouchListener(this);
 
-        AutoParallaxBackground autoParallaxBackground = new AutoParallaxBackground(0f, 0f, 0f, 5.0f);
-        autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-5.0f, new Sprite(0, SCREEN_HEIGHT - mResourceManager.mParallaxLayerFront.getHeight(), mResourceManager.mParallaxLayerFront, mVertexBufferObjectManager)));
-        autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-5.0f, new Sprite(0, SCREEN_HEIGHT - mResourceManager.mParallaxLayerBackBot.getHeight(), mResourceManager.mParallaxLayerBackBot, mVertexBufferObjectManager)));
-        autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-10.0f, new Sprite(0, 50, mResourceManager.mParallaxLayerBack, mVertexBufferObjectManager)));
+        final AutoParallaxBackground autoParallaxBackground = new AutoParallaxBackground(0f, 0f, 0f, 5.0f);
+        autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(- 7f, new Sprite(0, SCREEN_HEIGHT - mResourceManager.mParallaxLayerFront.getHeight(), mResourceManager.mParallaxLayerFront, mVertexBufferObjectManager)));
+        autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(0f, new Sprite(0, SCREEN_HEIGHT - mResourceManager.mParallaxLayerBackBot.getHeight(), mResourceManager.mParallaxLayerBackBot, mVertexBufferObjectManager)));
+        autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(- 14f, new Sprite(0, 50, mResourceManager.mParallaxLayerBack, mVertexBufferObjectManager)));
         setBackground(autoParallaxBackground);
+
+        autoParallaxBackground.setParallaxChangePerSecond(mGameSpeed);
 
         final float kitX = KIT_X_OFFSET;
         final float kitY = KIT_WATER_LEVEL;
@@ -91,9 +96,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         mMinePool.batchAllocatePoolItems(10);
         mMine = mMinePool.obtainPoolItem();
         mMine.animate(33);
+        mMine.setVelocity(mGameSpeed);
         attachChild(mMine);
         mMine.setZIndex(0);
         sortChildren();
+
+        mLastSecs = mEngine.getSecondsElapsedTotal();
 
         registerUpdateHandler(new IUpdateHandler() {
 
@@ -102,6 +110,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
             @Override
             public void onUpdate(float pSecondsElapsed) {
+                if (mEngine.getSecondsElapsedTotal() - mLastSecs > 1f) {
+                    mGameSpeed += 0.1f;
+                    autoParallaxBackground.setParallaxChangePerSecond(mGameSpeed);
+                    mLastSecs = mEngine.getSecondsElapsedTotal();
+                }
+
                 mPhysicsWorld.onUpdate(pSecondsElapsed);
                 final Body faceBody = (Body) mKit.getUserData();
                 float y = faceBody.getPosition().y;
@@ -138,6 +152,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
                     mMine = mMinePool.obtainPoolItem();
                     mMine.animate(33);
+                    mMine.setVelocity(mGameSpeed);
                     attachChild(mMine);
                     mMine.setZIndex(0);
                     sortChildren();
