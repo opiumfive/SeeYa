@@ -36,7 +36,7 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
         AutoParallaxBackground autoParallaxBackground = new AutoParallaxBackground(0f, 0f, 0f, 10.0f);
         autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-5.0f, new Sprite(0, SCREEN_HEIGHT - mResourceManager.mParallaxLayerFront.getHeight(), mResourceManager.mParallaxLayerFront, mVertexBufferObjectManager)));
         autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-5.0f, new Sprite(0, SCREEN_HEIGHT - mResourceManager.mParallaxLayerBackBot.getHeight(), mResourceManager.mParallaxLayerBackBot, mVertexBufferObjectManager)));
-        autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-10.0f, new Sprite(0, 100, mResourceManager.mParallaxLayerBack, mVertexBufferObjectManager)));
+        autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-10.0f, new Sprite(0, 50, mResourceManager.mParallaxLayerBack, mVertexBufferObjectManager)));
         setBackground(autoParallaxBackground);
         //setBackground(new Background(Color.WHITE));
         Text nameText = new Text(0, 0, mResourceManager.mFont2, "See Ya", new TextOptions(HorizontalAlign.LEFT), mVertexBufferObjectManager);

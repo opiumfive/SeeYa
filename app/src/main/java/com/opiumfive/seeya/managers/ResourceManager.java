@@ -27,11 +27,13 @@ public class ResourceManager {
 
     private BitmapTextureAtlas mBitmapTextureAtlas;
     private BitmapTextureAtlas mKitAnimAtlas;
+    private BitmapTextureAtlas mMineAnimAtlas;
     public ITextureRegion mKit;
     public TiledTextureRegion mKitSwimAnim;
     public ITextureRegion mMineBlue;
     public ITextureRegion mMineRed;
     public ITextureRegion mWaterAlpha;
+    public TiledTextureRegion mMineSwimAnim;
 
     public Font mFont1;
     public Font mFont2;
@@ -89,14 +91,14 @@ public class ResourceManager {
     public void loadGameResources() {
         BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
         mAutoParallaxBackgroundTexture = new BitmapTextureAtlas(mActivity.getTextureManager(), 1024, 1024);
-        mParallaxLayerFront = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mAutoParallaxBackgroundTexture, mActivity, "backtop.png", 0, 0);
-        mParallaxLayerBack = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mAutoParallaxBackgroundTexture, mActivity, "fronttop.png", 0, 480);
-        mParallaxLayerBackBot = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mAutoParallaxBackgroundTexture, mActivity, "frontbot.png", 0, 612);
+        mParallaxLayerFront = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mAutoParallaxBackgroundTexture, mActivity, "theme1/backtop.png", 0, 0);
+        mParallaxLayerBack = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mAutoParallaxBackgroundTexture, mActivity, "theme1/fronttop.png", 0, 480);
+        mParallaxLayerBackBot = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mAutoParallaxBackgroundTexture, mActivity, "theme1/frontbot.png", 0, 654);
         mAutoParallaxBackgroundTexture.load();
 
         mBitmapTextureAtlas = new BitmapTextureAtlas(mActivity.getTextureManager(), 1024, 1024, TextureOptions.BILINEAR);
         mKit = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "kit.png", 0, 0);
-        mWaterAlpha = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "wateralpha.png", 0, 73);
+        mWaterAlpha = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "theme1/water.png", 0, 73);
         mMineBlue = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "mine_blue.png", 0, 261);
         mMineRed = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "mine_red.png", 0, 367);
         mBitmapTextureAtlas.load();
@@ -104,6 +106,10 @@ public class ResourceManager {
         mKitAnimAtlas = new BitmapTextureAtlas(mActivity.getTextureManager(), 1024, 1024, TextureOptions.BILINEAR);
         mKitSwimAnim = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(mKitAnimAtlas, mActivity, "kit_underwater_anim.png", 0, 0, 5, 5);
         mKitAnimAtlas.load();
+
+        mMineAnimAtlas = new BitmapTextureAtlas(mActivity.getTextureManager(), 512, 512, TextureOptions.BILINEAR);
+        mMineSwimAnim = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(mMineAnimAtlas, mActivity, "mine.png", 0, 0, 5, 5);
+        mMineAnimAtlas.load();
     }
 
     public void unloadGameResources() {

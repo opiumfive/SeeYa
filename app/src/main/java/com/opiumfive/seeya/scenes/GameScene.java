@@ -62,7 +62,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         AutoParallaxBackground autoParallaxBackground = new AutoParallaxBackground(0f, 0f, 0f, 5.0f);
         autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-5.0f, new Sprite(0, SCREEN_HEIGHT - mResourceManager.mParallaxLayerFront.getHeight(), mResourceManager.mParallaxLayerFront, mVertexBufferObjectManager)));
         autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-5.0f, new Sprite(0, SCREEN_HEIGHT - mResourceManager.mParallaxLayerBackBot.getHeight(), mResourceManager.mParallaxLayerBackBot, mVertexBufferObjectManager)));
-        autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-10.0f, new Sprite(0, 100, mResourceManager.mParallaxLayerBack, mVertexBufferObjectManager)));
+        autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-10.0f, new Sprite(0, 50, mResourceManager.mParallaxLayerBack, mVertexBufferObjectManager)));
         setBackground(autoParallaxBackground);
 
         final float kitX = KIT_X_OFFSET;
@@ -87,9 +87,10 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         mKit.setUserData(kitBody);
         mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mKit, kitBody, true, false));
 
-        mMinePool = new MinePool(mResourceManager.mMineBlue, mResourceManager.mMineRed, mVertexBufferObjectManager);
+        mMinePool = new MinePool(mResourceManager.mMineSwimAnim, mVertexBufferObjectManager);
         mMinePool.batchAllocatePoolItems(10);
         mMine = mMinePool.obtainPoolItem();
+        mMine.animate(33);
         attachChild(mMine);
         mMine.setZIndex(0);
         sortChildren();
@@ -128,19 +129,15 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                     setGravity(0);
                 }
                 mKit.setRotation(faceBody.getLinearVelocity().y * FLYING_ROTATION_ANGLE / 7.0f);
-                if (mDiveFactor > 1.5f) {
-                    float scale = 1f - mDiveFactor / (UPDOWN_MAX_SEC_DIFFERENCE * 2.0f);
-                    mKit.setScale(scale);
-                } else {
-                    mKit.setScale(1.0f);
-                }
 
                 if (mMine.getX() < -SCREEN_WIDTH * 0.2f) {
+                    mMine.stopAnimation();
                     detachChild(mMine);
                     mMinePool.recyclePoolItem(mMine);
                     mMinePool.shufflePoolItems();
 
                     mMine = mMinePool.obtainPoolItem();
+                    mMine.animate(33);
                     attachChild(mMine);
                     mMine.setZIndex(0);
                     sortChildren();
