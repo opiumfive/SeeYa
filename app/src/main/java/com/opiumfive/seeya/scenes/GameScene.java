@@ -9,8 +9,11 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.opiumfive.seeya.PhysicsHelper;
 import com.opiumfive.seeya.managers.SceneManager;
+import com.opiumfive.seeya.pools.IslandPool;
 import com.opiumfive.seeya.pools.MinePool;
+import com.opiumfive.seeya.units.Island;
 import com.opiumfive.seeya.units.Mine;
 import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.entity.scene.IOnSceneTouchListener;
@@ -33,9 +36,10 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private static final float WATER_LEVEL_JUMP_HEIGHT = 0.3f;
     private static final float TAP_JUMP_HEIGHT = 7.0f;
     private static final float FLYING_ROTATION_ANGLE = 15.0f;
-    private static final float KIT_X_OFFSET = 100.0f;
+    private static final float KIT_X_OFFSET = 150.0f;
     private static final float UPDOWN_SEC_DIFFERENCE = 0.3f;
     private static final float UPDOWN_MAX_SEC_DIFFERENCE = 2.0f;
+
     private final float KIT_WATER_LEVEL = SCREEN_HEIGHT - mResourceManager.mKit.getHeight() / 2 - 188 - 10;
 
     private boolean mUsualJump = true;
@@ -45,15 +49,17 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private float mGameSpeed = 5f;
     private float mLastSecs = 0f;
 
-
     private PhysicsWorld mPhysicsWorld;
-    //private Sprite mKit;
     private AnimatedSprite mKit;
     private Sprite mWaterAlpha;
     private Mine mMine;
     private MinePool mMinePool;
+    private IslandPool mIslandPool;
+    private Island mIsland;
     float mSecsTotal;
     float mDiveFactor = 1.0f;
+
+    private PhysicsHelper mPhysicsHelper;
 
     private float mCameraZoomFactor;
 
@@ -91,8 +97,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         mPhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
         mPhysicsWorld.setContactListener(createContactListener());
 
-        final FixtureDef kitFixtureDef = PhysicsFactory.createFixtureDef(1, 0, 0);
-        final Body kitBody = PhysicsFactory.createCircleBody(mPhysicsWorld, mKit, BodyDef.BodyType.DynamicBody, kitFixtureDef);
+        mPhysicsHelper = new PhysicsHelper();
+        registerUpdateHandler(mPhysicsWorld);
+
+        final FixtureDef kitFixtureDef = PhysicsFactory.createFixtureDef(1f, 0.1f, 900f);
+       // final Body kitBody = PhysicsFactory.createBoxBody(mPhysicsWorld, 90f, 50f, 140f, 70f, BodyDef.BodyType.DynamicBody, kitFixtureDef);
+        final Body kitBody = PhysicsFactory.createCircleBody(mPhysicsWorld, 90f, 50f, 35f, BodyDef.BodyType.DynamicBody, kitFixtureDef);
         kitBody.setUserData("kit");
         mKit.setUserData(kitBody);
         mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mKit, kitBody, true, false));
@@ -104,7 +114,18 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         mMine.setVelocity(mGameSpeed);
         attachChild(mMine);
         mMine.setZIndex(0);
+
+        mIslandPool = new IslandPool(mResourceManager.mIsland1, mVertexBufferObjectManager);
+        mIslandPool.batchAllocatePoolItems(10);
+        mIsland = mIslandPool.obtainPoolItem();
+        attachChild(mIsland);
+        mIsland.setZIndex(0);
         sortChildren();
+
+        mPhysicsHelper.open(mActivity, "shapes/island1.xml");
+        Body body = mPhysicsHelper.createBody("island_1", mIsland, mPhysicsWorld);
+        mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mIsland, body, true, false));
+        body.setLinearVelocity(-mGameSpeed,0f);
 
         mLastSecs = mEngine.getSecondsElapsedTotal();
 
@@ -177,6 +198,19 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                     mMine.setVelocity(mGameSpeed);
                     attachChild(mMine);
                     mMine.setZIndex(0);
+                    sortChildren();
+                }
+                if (mIsland.getX() < - SCREEN_WIDTH * 2f) {
+                   // final PhysicsConnector islandPhysicsConnector = mPhysicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(mIsland);
+                  //  mPhysicsWorld.unregisterPhysicsConnector(islandPhysicsConnector);
+                  //  mPhysicsWorld.destroyBody(islandPhysicsConnector.getBody());
+                    detachChild(mIsland);
+                    mIslandPool.recyclePoolItem(mIsland);
+                    mIslandPool.shufflePoolItems();
+
+                    mIsland = mIslandPool.obtainPoolItem();
+                    attachChild(mIsland);
+                    mIsland.setZIndex(0);
                     sortChildren();
                 }
             }

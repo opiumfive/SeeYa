@@ -28,6 +28,7 @@ public class ResourceManager {
     private BitmapTextureAtlas mBitmapTextureAtlas;
     private BitmapTextureAtlas mKitAnimAtlas;
     private BitmapTextureAtlas mMineAnimAtlas;
+    private BitmapTextureAtlas mIslandsAtlas;
     public ITextureRegion mKit;
     public TiledTextureRegion mKitSwimAnim;
     public ITextureRegion mMineBlue;
@@ -38,6 +39,10 @@ public class ResourceManager {
     public Font mFont1;
     public Font mFont2;
     public Font mFont3;
+
+    public ITextureRegion mIsland1;
+
+
   //  public TiledTextureRegion mBirdTextureRegion;
    // public TiledTextureRegion mPipeTextureRegion;
 
@@ -110,12 +115,14 @@ public class ResourceManager {
         mMineAnimAtlas = new BitmapTextureAtlas(mActivity.getTextureManager(), 512, 512, TextureOptions.BILINEAR);
         mMineSwimAnim = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(mMineAnimAtlas, mActivity, "mine.png", 0, 0, 5, 5);
         mMineAnimAtlas.load();
+
+        mIslandsAtlas = new BitmapTextureAtlas(mActivity.getTextureManager(), 1024, 1024, TextureOptions.BILINEAR);
+        mIsland1 = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mIslandsAtlas, mActivity, "island_1.png", 0, 0);
+        mIslandsAtlas.load();
     }
 
     public void unloadGameResources() {
         mBitmapTextureAtlas.unload();
         mKit = null;
-
-
     }
 }

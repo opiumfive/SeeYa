@@ -50,7 +50,7 @@ public class MinePool extends GenericPool<Mine> {
         return super.obtainPoolItem();
     }
 
-    public int getPipeIndex() {
+    public int getMineIndex() {
         return mMineIndex;
     }
 
