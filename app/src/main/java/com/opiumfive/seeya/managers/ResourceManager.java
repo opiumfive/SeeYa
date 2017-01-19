@@ -16,9 +16,11 @@ import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 
 public class ResourceManager {
+
     private static final ResourceManager INSTANCE = new ResourceManager();
-    private BitmapTextureAtlas mSplashTextureAtlas;
-    public ITextureRegion mSplashTextureRegion;
+
+    //private BitmapTextureAtlas mSplashTextureAtlas;
+    //public ITextureRegion mSplashTextureRegion;
 
     private BitmapTextureAtlas mAutoParallaxBackgroundTexture;
     public ITextureRegion mParallaxLayerBack;
@@ -29,10 +31,8 @@ public class ResourceManager {
     private BitmapTextureAtlas mKitAnimAtlas;
     private BitmapTextureAtlas mMineAnimAtlas;
     private BitmapTextureAtlas mIslandsAtlas;
-    public ITextureRegion mKit;
+
     public TiledTextureRegion mKitSwimAnim;
-    public ITextureRegion mMineBlue;
-    public ITextureRegion mMineRed;
     public ITextureRegion mWaterAlpha;
     public TiledTextureRegion mMineSwimAnim;
 
@@ -41,17 +41,6 @@ public class ResourceManager {
     public Font mFont3;
 
     public ITextureRegion mIsland1;
-
-
-  //  public TiledTextureRegion mBirdTextureRegion;
-   // public TiledTextureRegion mPipeTextureRegion;
-
-   // private BitmapTextureAtlas mSubBitmapTextureAtlas;
-   // public TiledTextureRegion mStateTextureRegion;
-   // public ITextureRegion mPausedTextureRegion;
-    //public ITextureRegion mResumedTextureRegion;
-   // public TiledTextureRegion mButtonTextureRegion;
-    //public TiledTextureRegion mMedalTextureRegion;
 
     public GameActivity mActivity;
 
@@ -85,10 +74,6 @@ public class ResourceManager {
     }
 
     public void unloadSplashResources() {
-        //mFont2.unload();
-        //mFont2 = null;
-        //mFont3.unload();
-        //mFont3 = null;
         //mSplashTextureAtlas.unload();
         //mSplashTextureRegion = null;
     }
@@ -102,10 +87,7 @@ public class ResourceManager {
         mAutoParallaxBackgroundTexture.load();
 
         mBitmapTextureAtlas = new BitmapTextureAtlas(mActivity.getTextureManager(), 1024, 1024, TextureOptions.BILINEAR);
-        mKit = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "kit.png", 0, 0);
-        mWaterAlpha = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "theme1/water.png", 0, 73);
-        mMineBlue = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "mine_blue.png", 0, 261);
-        mMineRed = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "mine_red.png", 0, 367);
+        mWaterAlpha = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "theme1/water.png", 0, 0);
         mBitmapTextureAtlas.load();
 
         mKitAnimAtlas = new BitmapTextureAtlas(mActivity.getTextureManager(), 1024, 1024, TextureOptions.BILINEAR);
@@ -122,7 +104,21 @@ public class ResourceManager {
     }
 
     public void unloadGameResources() {
+        mAutoParallaxBackgroundTexture.unload();
+        mParallaxLayerFront = null;
+        mParallaxLayerBack = null;
+        mParallaxLayerBackBot = null;
+
         mBitmapTextureAtlas.unload();
-        mKit = null;
+        mWaterAlpha = null;
+
+        mKitAnimAtlas.unload();
+        mKitSwimAnim = null;
+
+        mMineAnimAtlas.unload();
+        mMineSwimAnim = null;
+
+        mIslandsAtlas.unload();
+        mIsland1 = null;
     }
 }

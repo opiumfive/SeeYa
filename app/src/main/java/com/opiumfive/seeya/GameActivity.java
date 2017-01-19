@@ -20,15 +20,16 @@ public class GameActivity extends SimpleBaseGameActivity {
     public static final int CAMERA_WIDTH = 800;
     public static final int CAMERA_HEIGHT = 480;
 
-    private SmoothCamera mCamera;
+    private static final float SPLASH_SHOW_TIME = 2f;
+
     private ResourceManager mResourceManager;
     private SceneManager mSceneManager;
 
     @Override
     public EngineOptions onCreateEngineOptions() {
-        mCamera = new SmoothCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT, 10f, 10f, 3f);
-        mCamera.setBounds(0f, 0f, CAMERA_WIDTH, CAMERA_HEIGHT);
-        final EngineOptions engineOptions = new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new FillResolutionPolicy(), mCamera);
+        SmoothCamera camera = new SmoothCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT, 10f, 10f, 3f);
+        camera.setBounds(0f, 0f, CAMERA_WIDTH, CAMERA_HEIGHT);
+        final EngineOptions engineOptions = new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new FillResolutionPolicy(), camera);
         //engineOptions.getAudioOptions().setNeedsSound(true).setNeedsMusic(true);
         engineOptions.setWakeLockOptions(WakeLockOptions.SCREEN_ON);
         return engineOptions;
@@ -44,7 +45,7 @@ public class GameActivity extends SimpleBaseGameActivity {
 
     @Override
     protected Scene onCreateScene() {
-        mEngine.registerUpdateHandler(new TimerHandler(2f, new ITimerCallback() {
+        mEngine.registerUpdateHandler(new TimerHandler(SPLASH_SHOW_TIME, new ITimerCallback() {
             public void onTimePassed(final TimerHandler pTimerHandler) {
                 mEngine.unregisterUpdateHandler(pTimerHandler);
                 mResourceManager.loadGameResources();
@@ -52,14 +53,12 @@ public class GameActivity extends SimpleBaseGameActivity {
                 mResourceManager.unloadSplashResources();
             }
         }));
-
         return mSceneManager.createSplashScene();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //System.exit(0);
     }
 
     @Override

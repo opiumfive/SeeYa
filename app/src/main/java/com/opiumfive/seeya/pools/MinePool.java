@@ -15,21 +15,16 @@ import java.util.Random;
 public class MinePool extends GenericPool<Mine> {
 
     private TiledTextureRegion mMineTextureRegion;
-    //private ITextureRegion mRedMineTextureRegion;
     private VertexBufferObjectManager mVertexBufferObjectManager;
-    private int mMineIndex;
 
     public MinePool(TiledTextureRegion pMineTextureRegion, VertexBufferObjectManager pVertexBufferObjectManager) {
         super();
         mMineTextureRegion = pMineTextureRegion;
-        //mRedMineTextureRegion = pRedMineTextureRegion;
         mVertexBufferObjectManager = pVertexBufferObjectManager;
     }
 
     @Override
     protected Mine onAllocatePoolItem() {
-        Random random = new Random();
-        //boolean isRed = random.nextBoolean();
         return new Mine(mMineTextureRegion, mVertexBufferObjectManager);
     }
 
@@ -46,12 +41,6 @@ public class MinePool extends GenericPool<Mine> {
 
     @Override
     public synchronized Mine obtainPoolItem() {
-        mMineIndex++;
         return super.obtainPoolItem();
     }
-
-    public int getMineIndex() {
-        return mMineIndex;
-    }
-
 }

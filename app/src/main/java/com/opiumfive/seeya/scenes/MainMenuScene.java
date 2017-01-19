@@ -38,16 +38,10 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
         autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-5.0f, new Sprite(0, SCREEN_HEIGHT - mResourceManager.mParallaxLayerBackBot.getHeight(), mResourceManager.mParallaxLayerBackBot, mVertexBufferObjectManager)));
         autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity(-10.0f, new Sprite(0, 50, mResourceManager.mParallaxLayerBack, mVertexBufferObjectManager)));
         setBackground(autoParallaxBackground);
-        //setBackground(new Background(Color.WHITE));
+
         Text nameText = new Text(0, 0, mResourceManager.mFont2, "See Ya", new TextOptions(HorizontalAlign.LEFT), mVertexBufferObjectManager);
         nameText.setPosition((SCREEN_WIDTH - nameText.getWidth())/2f, 65);
         attachChild(nameText);
-
-        final float kitX = 100;
-        final float kitY = (SCREEN_HEIGHT - mResourceManager.mKit.getHeight()) / 2;
-        Sprite kit = new Sprite(kitX, kitY, mResourceManager.mKit, mVertexBufferObjectManager);
-        kit.setRotation(-15);
-        attachChild(kit);
 
         mMenuScene = createMenuScene();
         mSubMenuScene = createSubMenuScene();

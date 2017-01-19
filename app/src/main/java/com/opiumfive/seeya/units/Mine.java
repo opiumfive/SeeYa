@@ -16,7 +16,7 @@ import static com.opiumfive.seeya.GameActivity.CAMERA_WIDTH;
 public class Mine extends AnimatedSprite {
 
     private static final float DEMO_VELOCITY = 150.0f;
-    private static final float DEMO_POSITION = 1.1f*CAMERA_WIDTH;
+    private static final float DEMO_POSITION = 1.1f * CAMERA_WIDTH;
     private static final float MINE_WATER_LEVEL = 246;
 
     private static final float VELOCITY_FACTOR = 30f;
@@ -32,8 +32,7 @@ public class Mine extends AnimatedSprite {
     }
 
     public void setVelocity(float velocity) {
-        float velo = - VELOCITY_FACTOR * velocity;
-        mPhysicsHandler.setVelocity(velo, 0);
+        mPhysicsHandler.setVelocity( - VELOCITY_FACTOR * velocity, 0);
     }
 
 }
