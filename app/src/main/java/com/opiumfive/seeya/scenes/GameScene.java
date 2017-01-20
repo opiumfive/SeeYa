@@ -30,11 +30,11 @@ import org.andengine.input.touch.TouchEvent;
 public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
     private static final float WATER_LEVEL = 9.0f;
-    private static final float WATER_LEVEL_JUMP_HEIGHT = 0.3f;
-    private static final float TAP_JUMP_HEIGHT = 7.0f;
+    private static final float WATER_LEVEL_JUMP_HEIGHT = 0.3f;  //ZONE +- WHERE WHALE CAN DIVE OR JUMP
+    private static final float TAP_JUMP_HEIGHT = 7.0f; // STRENGTH OF JUMP
     private static final float FLYING_ROTATION_ANGLE = 15.0f;
     private static final float KIT_X_OFFSET = 150.0f;
-    private static final float UPDOWN_SEC_DIFFERENCE = 0.3f;
+    private static final float UPDOWN_SEC_DIFFERENCE = 0.3f; // sec to distinguish between jump and dive
     private static final float UPDOWN_MAX_SEC_DIFFERENCE = 1.0f; // TODO configure to get max factor 0.5
     private static final float GAME_START_SPEED = 5f;
     private static final long ANIMATION_FRAME_DURATION = 33L;
@@ -46,8 +46,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private boolean mDiveMade = false;
     private boolean mUpMade = false;
 
-    private float mGameSpeed = 5f;
-    private float mLastSecs = 0f;
+    private float mGameSpeed;
+    private float mLastSecs;
 
     private PhysicsWorld mPhysicsWorld;
     private AnimatedSprite mKit;
@@ -124,7 +124,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         mPhysicsHelper = new PhysicsHelper();
         registerUpdateHandler(mPhysicsWorld);
 
-        final FixtureDef kitFixtureDef = PhysicsFactory.createFixtureDef(1f, 0.1f, 900f);
+        final FixtureDef kitFixtureDef = PhysicsFactory.createFixtureDef(0f, 0.1f, 0f);
         final Body kitBody = PhysicsFactory.createCircleBody(mPhysicsWorld, 90f, 50f, 35f, BodyDef.BodyType.DynamicBody, kitFixtureDef);
         kitBody.setUserData("kit");
         mKit.setUserData(kitBody);
@@ -144,6 +144,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
             @Override
             public void onUpdate(float pSecondsElapsed) {
+
+                /* CHANGE OF GAME SPEED */
                 if (mEngine.getSecondsElapsedTotal() - mLastSecs > 1f) {
                     mGameSpeed += 0.1f;
                     autoParallaxBackground.setParallaxChangePerSecond(mGameSpeed);
@@ -153,14 +155,15 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                 mPhysicsWorld.onUpdate(pSecondsElapsed);
                 final Body faceBody = (Body) mKit.getUserData();
                 float y = faceBody.getPosition().y;
+
+                /* HANDLE CAMERA ZOOM DEPENDING ON Y POSITION*/
                 float yy = mKit.getY();
-
-                if (yy < 0f || yy + 100 > 480f) {
-
-                    if ( yy + 100 > 480f) {
-                        mCameraZoomFactor = 240f / (yy + 100 - 240f);
+                if (yy < 0f || yy + mKit.getHeight() > SCREEN_HEIGHT) {
+                    float halfScreenHeight = SCREEN_HEIGHT / 2f;
+                    if ( yy + mKit.getHeight() > SCREEN_HEIGHT) {
+                        mCameraZoomFactor = halfScreenHeight / (yy + mKit.getHeight() - halfScreenHeight);
                     } else {
-                        mCameraZoomFactor = 240f / (240 - yy);
+                        mCameraZoomFactor = halfScreenHeight / (halfScreenHeight - yy);
                     }
                     mCamera.setZoomFactor(mCameraZoomFactor);
                     mWaterAlpha.setScale(1f + (1f - mCameraZoomFactor) * 3);
@@ -168,9 +171,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                     mCameraZoomFactor = 1f;
                     mCamera.setZoomFactor(mCameraZoomFactor);
                     mWaterAlpha.setScale(1f + (1f - mCameraZoomFactor) * 3);
-
                 }
 
+                /* HANDLING JUMPING AND DIVING */
                 if (Math.abs(y - WATER_LEVEL) >= WATER_LEVEL_JUMP_HEIGHT) {
                     if (y > WATER_LEVEL) {
                         setGravity(((mDiveMade && mUsualJump) || (mUpMade && !mUsualJump)) ? -7 * 4 : -7);
@@ -195,6 +198,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                 }
                 mKit.setRotation(faceBody.getLinearVelocity().y * FLYING_ROTATION_ANGLE / 7.0f);
 
+
+                /* POOLS */
                 if (mMine.getX() < - SCREEN_WIDTH * 0.2f) {
                     mMine.stopAnimation();
                     detachChild(mMine);
