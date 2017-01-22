@@ -1,19 +1,5 @@
 package com.opiumfive.seeya;
 
-/**
- * PhysicsEditor Importer Library
- *
- * Usage:
- * - Create an instance of this class
- * - Use the "open" method to load an XML file from PhysicsEditor
- * - Invoke "createBody" to create bodies from library.
- *
- * by Adrian Nilsson (ade at ade dot se)
- * BIG IRON GAMES (bigirongames.org)
- * Date: 2011-08-30
- * Time: 11:51
- */
-
 import android.content.Context;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -35,45 +21,22 @@ import javax.xml.parsers.SAXParserFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
 public class PhysicsHelper {
     private HashMap<String, BodyTemplate> shapes = new HashMap<String, BodyTemplate>();
     private float pixelToMeterRatio = PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT;
 
     public PhysicsHelper() {
-        //Default constructor
-    }
-    public PhysicsHelper(float pixelToMeterRatio) {
-        this.pixelToMeterRatio = pixelToMeterRatio;
     }
 
-    /**
-     * Read shapes from an XML file and add to library.
-     * Path is relative to your assets folder so if your file is in
-     * "assets/shapes/shapes.xml", the path should be "shapes/shapes.xml"
-     * @param context
-     * @param xmlFile
-     */
     public void open(Context context, String xmlFile) {
         append(context, xmlFile, this.pixelToMeterRatio);
     }
 
-    /**
-     * If you wish, you may access the template data and create custom bodies.
-     * Be advised that vertex positions are pre-adjusted for Box2D coordinates (pixel to meter ratio).
-     * @param key
-     * @return
-     */
     public BodyTemplate get(String key) {
         return this.shapes.get(key);
     }
 
-    /**
-     * Create a Box2D Body with a shape from the library.
-     * @param name name of the shape (usually filename of the image, without extension)
-     * @param pShape the AndEngine shape you will be associating the body with (physics connector is not created here).
-     * @param pPhysicsWorld the AndEngine Box2D physics world object.
-     * @return
-     */
     public Body createBody(String name, IShape pShape, PhysicsWorld pPhysicsWorld) {
         BodyTemplate bodyTemplate = this.shapes.get(name);
 
@@ -114,6 +77,7 @@ public class PhysicsHelper {
     }
 
     protected static class ShapeLoader extends DefaultHandler {
+
         public static final String TAG_BODY = "body";
         public static final String TAG_FIXTURE = "fixture";
         public static final String TAG_POLYGON = "polygon";
@@ -124,20 +88,15 @@ public class PhysicsHelper {
         public static final String TAG_DENSITY = "density";
         public static final String TAG_RESTITUTION = "restitution";
         public static final String TAG_FRICTION = "friction";
-        public static final String TAG_FILTER_CATEGORY_BITS = "filter_categoryBits";
-        public static final String TAG_FILTER_GROUP_INDEX = "filter_groupIndex";
-        public static final String TAG_FILTER_MASK_BITS = "filter_maskBits";
         public static final String TAG_ISDYNAMIC = "dynamic";
-        public static final String TAG_ISSENSOR = "isSensor";
 
         private float pixelToMeterRatio;
         private StringBuilder builder;
         private HashMap<String, BodyTemplate> shapes;
         private BodyTemplate currentBody;
-        private ArrayList<Vector2> currentPolygonVertices = new ArrayList<Vector2>();
-        private ArrayList<FixtureTemplate> currentFixtures = new ArrayList<FixtureTemplate>();
-        private ArrayList<PolygonTemplate> currentPolygons = new ArrayList<PolygonTemplate>();
-
+        private ArrayList<Vector2> currentPolygonVertices = new ArrayList<>();
+        private ArrayList<FixtureTemplate> currentFixtures = new ArrayList<>();
+        private ArrayList<PolygonTemplate> currentPolygons = new ArrayList<>();
 
 
         protected ShapeLoader(HashMap<String, BodyTemplate> shapes, float pixelToMeterRatio) {
@@ -188,25 +147,17 @@ public class PhysicsHelper {
                 float restitution = Float.parseFloat(attributes.getValue(TAG_RESTITUTION));
                 float friction = Float.parseFloat(attributes.getValue(TAG_FRICTION));
                 float density = Float.parseFloat(attributes.getValue(TAG_DENSITY));
-                short category = parseShort(attributes.getValue(TAG_FILTER_CATEGORY_BITS));
-                short groupIndex = parseShort(attributes.getValue(TAG_FILTER_GROUP_INDEX));
-                short maskBits = parseShort(attributes.getValue(TAG_FILTER_MASK_BITS));
-                boolean isSensor = attributes.getValue(TAG_ISSENSOR).equalsIgnoreCase("true");
-                fixture.fixtureDef = PhysicsFactory.createFixtureDef(density, restitution, friction//, isSensor, category, maskBits, groupIndex
-                         );
+                fixture.fixtureDef = PhysicsFactory.createFixtureDef(density, restitution, friction);
                 currentFixtures.add(fixture);
             } else if (localName.equalsIgnoreCase(TAG_POLYGON)) {
                 currentPolygonVertices.clear();
             }  else if (localName.equalsIgnoreCase(TAG_VERTEX)) {
-                currentPolygonVertices.add(new Vector2(Float.parseFloat(attributes.getValue(TAG_X)) / this.pixelToMeterRatio, Float.parseFloat(attributes.getValue(TAG_Y)) / this.pixelToMeterRatio));
+                currentPolygonVertices.add(new Vector2(Float.parseFloat(attributes.getValue(TAG_X)) /
+                        this.pixelToMeterRatio, Float.parseFloat(attributes.getValue(TAG_Y)) / this.pixelToMeterRatio));
             }
         }
     }
-    private static short parseShort(String val) {
-        int intVal = Integer.parseInt(val);
-        short ret = (short)(intVal & 65535);
-        return (short)intVal;
-    }
+
     private static class BodyTemplate {
         public String name;
         public boolean isDynamic = true;
@@ -215,6 +166,7 @@ public class PhysicsHelper {
             this.fixtureTemplates = fixtureTemplates.toArray(new FixtureTemplate[fixtureTemplates.size()]);
         }
     }
+
     private static class FixtureTemplate {
         public PolygonTemplate[] polygons;
         public FixtureDef fixtureDef;
@@ -222,6 +174,7 @@ public class PhysicsHelper {
             polygons = polygonTemplates.toArray(new PolygonTemplate[polygonTemplates.size()]);
         }
     }
+
     private static class PolygonTemplate {
         public Vector2[] vertices;
         public PolygonTemplate(ArrayList<Vector2> vectorList) {

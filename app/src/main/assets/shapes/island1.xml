@@ -8,7 +8,7 @@
             <fixture
                 density="1"
                 friction="0"
-                restitution="0.4"
+                restitution="0"
                 filter_categoryBits="1"
                 filter_groupIndex="0"
                 filter_maskBits="65535"

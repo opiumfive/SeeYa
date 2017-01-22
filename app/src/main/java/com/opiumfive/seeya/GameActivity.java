@@ -2,8 +2,6 @@ package com.opiumfive.seeya;
 
 import com.opiumfive.seeya.managers.ResourceManager;
 import com.opiumfive.seeya.managers.SceneManager;
-
-import org.andengine.engine.camera.Camera;
 import org.andengine.engine.camera.SmoothCamera;
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
@@ -30,7 +28,7 @@ public class GameActivity extends SimpleBaseGameActivity {
         SmoothCamera camera = new SmoothCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT, 10f, 10f, 3f);
         camera.setBounds(0f, 0f, CAMERA_WIDTH, CAMERA_HEIGHT);
         final EngineOptions engineOptions = new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new FillResolutionPolicy(), camera);
-        //engineOptions.getAudioOptions().setNeedsSound(true).setNeedsMusic(true);
+        engineOptions.getAudioOptions().setNeedsSound(true).setNeedsMusic(true);
         engineOptions.setWakeLockOptions(WakeLockOptions.SCREEN_ON);
         return engineOptions;
     }

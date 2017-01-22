@@ -18,6 +18,7 @@ import org.andengine.entity.util.FPSLogger;
 import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
 
+
 public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemClickListener {
 
     protected static final int MENU_PLAY = 0;
