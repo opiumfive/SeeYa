@@ -269,7 +269,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                     if (y > WATER_LEVEL) {
                         setGravity(((mDiveMade && mUsualJump) || (mUpMade && !mUsualJump)) ? - GRAVITY * 4 : - GRAVITY);
                         if (!mExplosionShown &&((mDiveMade && mUsualJump) || (mUpMade && !mUsualJump))) {
-                            makeWaterExplosion(mKit.getX() + mKit.getWidth() / 2, mKit.getY() + mKit.getHeight() / 2);
+                            float strength = 0.5f;
+                            if (!mUsualJump) strength += mDiveFactor / UPDOWN_MAX_SEC_DIFFERENCE / 4f;
+                            makeWaterExplosion(mKit.getX() + mKit.getWidth() / 2, mKit.getY() + mKit.getHeight() / 3, strength);
                             mExplosionShown = true;
                         }
                         mKit.animate(ANIMATION_FRAME_DURATION);
@@ -445,15 +447,15 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         return contactListener;
     }
 
-    private void makeWaterExplosion(float pos_x, float pos_y) {
+    private void makeWaterExplosion(float pos_x, float pos_y, float strength) {
         PointParticleEmitter particleEmitter = new PointParticleEmitter(pos_x, pos_y);
 
-        final ParticleSystem particleSystem = new SpriteParticleSystem(particleEmitter, 100, 100, 15,
+        final ParticleSystem particleSystem = new SpriteParticleSystem(particleEmitter, 100, 100, 25,
                 mResourceManager.mWaterExp, mVertexBufferObjectManager);
 
-        particleSystem.addParticleInitializer(new VelocityParticleInitializer<Sprite>( - 150, 50, - 225, 0));
-        particleSystem.addParticleModifier(new AlphaParticleModifier<Sprite>(0, 0.6f, 1f, 0));
-        particleSystem.addParticleModifier(new ScaleParticleModifier<Sprite>(0, 0.6f, 1.5f, 0.8f));
+        particleSystem.addParticleInitializer(new VelocityParticleInitializer<Sprite>( - 150 * strength, 120 * strength, - 225 * strength, 20 * strength));
+        particleSystem.addParticleModifier(new AlphaParticleModifier<Sprite>(0f, 1f, 1f, 0f));
+        particleSystem.addParticleModifier(new ScaleParticleModifier<Sprite>(0f, 1f, 1.5f, 0.8f));
 
         attachChild(particleSystem);
         registerUpdateHandler(new TimerHandler(1.0f, new ITimerCallback() {
