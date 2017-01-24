@@ -56,7 +56,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private static final float GRAVITY = 7f;
 
     private static final String KIT_LABEL = "kit";
-    private static final String ISLAND_LABEL = "island1";
+    private static final String ISLAND_LABEL = "island_1";
     private static final String MINE_LABEL = "mine";
 
     private boolean mUsualJump = true;
@@ -123,6 +123,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
         mGameOverScene = new CameraScene(mCamera);
         Text gameOverText = new Text(SCREEN_WIDTH / 2f, SCREEN_HEIGHT / 2f, mResourceManager.mFont2, "GAME OVER", new TextOptions(HorizontalAlign.LEFT), mVertexBufferObjectManager);
+        gameOverText.setX((SCREEN_WIDTH - gameOverText.getWidth()) / 2);
+        gameOverText.setY((SCREEN_HEIGHT - gameOverText.getHeight()) / 2);
         mGameOverScene.attachChild(gameOverText);
         mGameOverScene.setBackgroundEnabled(false);
         mGameOverScene.setOnSceneTouchListener(new IOnSceneTouchListener() {
@@ -131,7 +133,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
             public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
                 if (pSceneTouchEvent.isActionUp()) {
                     clearChildScene();
-                    mHudText.setVisible(true);
+                    GameScene.this.onBackKeyPressed();
                 }
                 return true;
             }
@@ -407,6 +409,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                 final String userDataB = (String) bodyB.getUserData();
 
                 if ((MINE_LABEL.equals(userDataA) && KIT_LABEL.equals(userDataB)) || (KIT_LABEL.equals(userDataA) && MINE_LABEL.equals(userDataB))) {
+                    mHudText.setVisible(false);
                     setChildScene(mGameOverScene, false, true, true);
                 }
             }
@@ -429,6 +432,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
     @Override
     public void onBackKeyPressed() {
+        mHudText.setVisible(false);
         mCameraZoomFactor = 1.0f;
         mCamera.setZoomFactor(mCameraZoomFactor);
         mSceneManager.setScene(SceneManager.SceneType.SCENE_MENU);
