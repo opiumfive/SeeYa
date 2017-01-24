@@ -4,8 +4,12 @@ package com.opiumfive.seeya.scenes;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.Manifold;
 import com.opiumfive.seeya.PhysicsHelper;
 import com.opiumfive.seeya.managers.SceneManager;
 import com.opiumfive.seeya.pools.IslandPool;
@@ -13,20 +17,25 @@ import com.opiumfive.seeya.pools.MinePool;
 import com.opiumfive.seeya.units.Island;
 import com.opiumfive.seeya.units.Kit;
 import com.opiumfive.seeya.units.Mine;
+
+import org.andengine.engine.camera.hud.HUD;
 import org.andengine.engine.handler.IUpdateHandler;
+import org.andengine.entity.scene.CameraScene;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.AutoParallaxBackground;
 import org.andengine.entity.scene.background.ParallaxBackground;
 import org.andengine.entity.shape.IShape;
-import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.text.Text;
+import org.andengine.entity.text.TextOptions;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.extension.physics.box2d.PhysicsConnector;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.input.touch.TouchEvent;
+import org.andengine.util.HorizontalAlign;
 
 
 public class GameScene extends BaseScene implements IOnSceneTouchListener {
@@ -45,8 +54,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private static final int ROTATE_LEFT = 1;
     private static final int ROTATE_RIGHT = 2;
     private static final float GRAVITY = 7f;
-
-    private final float KIT_WATER_LEVEL = SCREEN_HEIGHT - mResourceManager.mKitSwimAnim.getHeight() / 2 - 188 - 10;
 
     private boolean mUsualJump = true;
     private boolean mDiveMade = false;
@@ -71,6 +78,10 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private int mRotate = 0; // 0 - no, 1 - left, 2 - right
     private float mKitAngle = 0f;
 
+    private Text mHudText;
+    private int mScore;
+    private CameraScene mGameOverScene;
+
     @Override
     public void createScene() {
 
@@ -90,6 +101,37 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity( - 14f, new Sprite(0, 50, mResourceManager.mParallaxLayerBack, mVertexBufferObjectManager)));
         setBackground(autoParallaxBackground);
 
+         /*
+         * INIT HUD
+         */
+
+        HUD gameHUD = new HUD();
+        mHudText = new Text(SCREEN_WIDTH / 2f, 15f, mResourceManager.mFont2, "0123456789", new TextOptions(HorizontalAlign.LEFT), mVertexBufferObjectManager);
+        mHudText.setText(String.valueOf(mScore));
+        mHudText.setX((SCREEN_WIDTH - mHudText.getWidth()) / 2);
+        mHudText.setVisible(true);
+        gameHUD.attachChild(mHudText);
+        mCamera.setHUD(gameHUD);
+
+        /*
+         * INIT GAMEOVER CAMERA SCENE
+         */
+
+        mGameOverScene = new CameraScene(mCamera);
+        Text gameOverText = new Text(SCREEN_WIDTH / 2f, SCREEN_HEIGHT / 2f, mResourceManager.mFont2, "GAME OVER", new TextOptions(HorizontalAlign.LEFT), mVertexBufferObjectManager);
+        mGameOverScene.attachChild(gameOverText);
+        mGameOverScene.setBackgroundEnabled(false);
+        mGameOverScene.setOnSceneTouchListener(new IOnSceneTouchListener() {
+
+            @Override
+            public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
+                if (pSceneTouchEvent.isActionUp()) {
+                    clearChildScene();
+                    mHudText.setVisible(true);
+                }
+                return true;
+            }
+        });
         /*
          *  INIT SPRITES
          */
@@ -100,8 +142,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         mKit.setPosition(KIT_X_OFFSET, SCREEN_HEIGHT - mResourceManager.mKitSwimAnim.getHeight() / 2 - 188 - 10);
 
         mWaterAlpha = new Sprite(0, SCREEN_HEIGHT - mResourceManager.mWaterAlpha.getHeight(), mResourceManager.mWaterAlpha, mVertexBufferObjectManager);
-        attachChild(mWaterAlpha);
         mWaterAlpha.setZIndex(1);
+        attachChild(mWaterAlpha);
         mWaterAlpha.setScaleCenterY( - mWaterAlpha.getHeight() / 4f);
 
         /*
@@ -112,15 +154,16 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         mMinePool.batchAllocatePoolItems(10);
         mMine = mMinePool.obtainPoolItem();
         mMine.animate(ANIMATION_FRAME_DURATION);
-        attachChild(mMine);
         mMine.setZIndex(0);
+        attachChild(mMine);
 
         mIslandPool = new IslandPool(mResourceManager.mIsland1, mVertexBufferObjectManager);
         mIslandPool.batchAllocatePoolItems(10);
         mIsland = mIslandPool.obtainPoolItem();
-        attachChild(mIsland);
         mIsland.setZIndex(0);
-        sortChildren();
+        attachChild(mIsland);
+
+        sortChildren(); //TODO find a way to remove it
 
         /*
          * INIT PHYSICS
@@ -168,6 +211,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
                 /* CHANGE OF GAME SPEED */
                 if (mEngine.getSecondsElapsedTotal() - mLastSecs > 1f) {
+                    mHudText.setText(String.valueOf(++mScore));
                     mGameSpeed += 0.1f;
                     autoParallaxBackground.setParallaxChangePerSecond(mGameSpeed);
                     mLastSecs = mEngine.getSecondsElapsedTotal();
@@ -243,7 +287,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                         break;
                 }
 
-
                 /* POOLS */
                 if (mMine.getX() < - SCREEN_WIDTH * 2f) {
                     freeBody(mMine);
@@ -254,15 +297,16 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
                     mMine = mMinePool.obtainPoolItem();
                     mMine.animate(ANIMATION_FRAME_DURATION);
-                    attachChild(mMine);
                     mMine.setZIndex(0);
+                    attachChild(mMine);
+
                     final FixtureDef mineFixtureDef = PhysicsFactory.createFixtureDef(1f, 0f, 0f);
                     final Body mineBody = PhysicsFactory.createCircleBody(mPhysicsWorld, mMine, BodyDef.BodyType.KinematicBody, mineFixtureDef);
                     mineBody.setUserData("mine");
                     mMine.setUserData(mineBody);
                     mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mMine, mineBody, true, false));
                     mineBody.setLinearVelocity( - mGameSpeed, 0f);
-                    sortChildren();
+                    sortChildren(); //TODO find a way to remove it
                 }   // ===============================> NEED HARD REFACTOR
                 if (mIsland.getX() < - SCREEN_WIDTH * 2f) {
                     freeBody(mIsland);
@@ -271,12 +315,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                     mIslandPool.shufflePoolItems();
 
                     mIsland = mIslandPool.obtainPoolItem();
-                    attachChild(mIsland);
                     mIsland.setZIndex(0);
+                    attachChild(mIsland);
                     Body body = mPhysicsHelper.createBody("island_1", mIsland, mPhysicsWorld);
                     mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mIsland, body, true, false));
                     body.setLinearVelocity( - mGameSpeed, 0f);
-                    sortChildren();
+                    sortChildren(); //TODO find a way to remove it
                 }
             }
         });
@@ -347,8 +391,36 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     }
 
     private ContactListener createContactListener() {
-        //TODO implement
-        return null;
+        ContactListener contactListener = new ContactListener() {
+            @Override
+            public void beginContact(Contact pContact) {
+                final Fixture fixtureA = pContact.getFixtureA();
+                final Body bodyA = fixtureA.getBody();
+                final String userDataA = (String) bodyA.getUserData();
+
+                final Fixture fixtureB = pContact.getFixtureB();
+                final Body bodyB = fixtureB.getBody();
+                final String userDataB = (String) bodyB.getUserData();
+
+                if (("mine".equals(userDataA) && "kit".equals(userDataB)) || ("kit".equals(userDataA) && "mine".equals(userDataB))) {
+                    setChildScene(mGameOverScene, false, true, true);
+                }
+            }
+
+            @Override
+            public void endContact(Contact contact) {
+            }
+
+            @Override
+            public void preSolve(Contact contact, Manifold oldManifold) {
+            }
+
+            @Override
+            public void postSolve(Contact contact, ContactImpulse impulse) {
+            }
+
+        };
+        return contactListener;
     }
 
     @Override
