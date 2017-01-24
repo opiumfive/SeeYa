@@ -55,6 +55,10 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private static final int ROTATE_RIGHT = 2;
     private static final float GRAVITY = 7f;
 
+    private static final String KIT_LABEL = "kit";
+    private static final String ISLAND_LABEL = "island1";
+    private static final String MINE_LABEL = "mine";
+
     private boolean mUsualJump = true;
     private boolean mDiveMade = false;
     private boolean mUpMade = false;
@@ -176,19 +180,19 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
         final FixtureDef kitFixtureDef = PhysicsFactory.createFixtureDef(0f, 0.1f, 0f);
         final Body kitBody = PhysicsFactory.createCircleBody(mPhysicsWorld, 90f, 50f, 35f, BodyDef.BodyType.DynamicBody, kitFixtureDef);
-        kitBody.setUserData("kit");
+        kitBody.setUserData(KIT_LABEL);
         mKit.setUserData(kitBody);
         mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mKit, kitBody, true, false));
 
         final FixtureDef mineFixtureDef = PhysicsFactory.createFixtureDef(1f, 0f, 0f);
         final Body mineBody = PhysicsFactory.createCircleBody(mPhysicsWorld, mMine, BodyDef.BodyType.KinematicBody, mineFixtureDef);
-        mineBody.setUserData("mine");
+        mineBody.setUserData(MINE_LABEL);
         mMine.setUserData(mineBody);
         mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mMine, mineBody, true, false));
         mineBody.setLinearVelocity( - mGameSpeed, 0f);
 
         mPhysicsHelper.open(mActivity, SHAPES_FILE);
-        final Body body = mPhysicsHelper.createBody("island_1", mIsland, mPhysicsWorld);
+        final Body body = mPhysicsHelper.createBody(ISLAND_LABEL, mIsland, mPhysicsWorld);
         mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mIsland, body, true, false));
         body.setLinearVelocity( - mGameSpeed, 0f);
 
@@ -302,7 +306,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
                     final FixtureDef mineFixtureDef = PhysicsFactory.createFixtureDef(1f, 0f, 0f);
                     final Body mineBody = PhysicsFactory.createCircleBody(mPhysicsWorld, mMine, BodyDef.BodyType.KinematicBody, mineFixtureDef);
-                    mineBody.setUserData("mine");
+                    mineBody.setUserData(MINE_LABEL);
                     mMine.setUserData(mineBody);
                     mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mMine, mineBody, true, false));
                     mineBody.setLinearVelocity( - mGameSpeed, 0f);
@@ -402,7 +406,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                 final Body bodyB = fixtureB.getBody();
                 final String userDataB = (String) bodyB.getUserData();
 
-                if (("mine".equals(userDataA) && "kit".equals(userDataB)) || ("kit".equals(userDataA) && "mine".equals(userDataB))) {
+                if ((MINE_LABEL.equals(userDataA) && KIT_LABEL.equals(userDataB)) || (KIT_LABEL.equals(userDataA) && MINE_LABEL.equals(userDataB))) {
                     setChildScene(mGameOverScene, false, true, true);
                 }
             }
