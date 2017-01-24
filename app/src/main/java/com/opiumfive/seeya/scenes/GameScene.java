@@ -20,6 +20,14 @@ import com.opiumfive.seeya.units.Mine;
 
 import org.andengine.engine.camera.hud.HUD;
 import org.andengine.engine.handler.IUpdateHandler;
+import org.andengine.engine.handler.timer.ITimerCallback;
+import org.andengine.engine.handler.timer.TimerHandler;
+import org.andengine.entity.particle.ParticleSystem;
+import org.andengine.entity.particle.SpriteParticleSystem;
+import org.andengine.entity.particle.emitter.PointParticleEmitter;
+import org.andengine.entity.particle.initializer.VelocityParticleInitializer;
+import org.andengine.entity.particle.modifier.AlphaParticleModifier;
+import org.andengine.entity.particle.modifier.ScaleParticleModifier;
 import org.andengine.entity.scene.CameraScene;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
@@ -85,6 +93,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private Text mHudText;
     private int mScore;
     private CameraScene mGameOverScene;
+    private boolean mExplosionShown;
 
     @Override
     public void createScene() {
@@ -259,6 +268,10 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                 if (Math.abs(y - WATER_LEVEL) >= WATER_LEVEL_JUMP_HEIGHT) {
                     if (y > WATER_LEVEL) {
                         setGravity(((mDiveMade && mUsualJump) || (mUpMade && !mUsualJump)) ? - GRAVITY * 4 : - GRAVITY);
+                        if (!mExplosionShown &&((mDiveMade && mUsualJump) || (mUpMade && !mUsualJump))) {
+                            makeWaterExplosion(mKit.getX() + mKit.getWidth() / 2, mKit.getY() + mKit.getHeight() / 2);
+                            mExplosionShown = true;
+                        }
                         mKit.animate(ANIMATION_FRAME_DURATION);
                     } else {
                         mKit.stopAnimation(7);
@@ -270,11 +283,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                         mDiveMade = true;
                     }
                 } else {
-                    if (y > WATER_LEVEL - WATER_LEVEL_JUMP_HEIGHT && ((mDiveMade && mUsualJump) || (mDiveMade && mUpMade && !mUsualJump))) {
+                    if (y > WATER_LEVEL - WATER_LEVEL_JUMP_HEIGHT && ((mDiveMade && mUsualJump) || (mDiveMade && mUpMade))) {
                         jumpSprite(mKit, 0);
                         if (mDiveMade) mDiveMade = false;
                         if (mUpMade) mUpMade = false;
                     }
+
                     setGravity(0);
                 }
 
@@ -323,7 +337,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                     mIsland = mIslandPool.obtainPoolItem();
                     mIsland.setZIndex(0);
                     attachChild(mIsland);
-                    Body body = mPhysicsHelper.createBody("island_1", mIsland, mPhysicsWorld);
+                    Body body = mPhysicsHelper.createBody(ISLAND_LABEL, mIsland, mPhysicsWorld);
                     mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mIsland, body, true, false));
                     body.setLinearVelocity( - mGameSpeed, 0f);
                     sortChildren(); //TODO find a way to remove it
@@ -394,6 +408,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         final Vector2 velocity = Vector2Pool.obtain(faceBody.getLinearVelocity().x, pY);
         faceBody.setLinearVelocity(velocity);
         Vector2Pool.recycle(velocity);
+        mExplosionShown = false;
     }
 
     private ContactListener createContactListener() {
@@ -428,6 +443,28 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
         };
         return contactListener;
+    }
+
+    private void makeWaterExplosion(float pos_x, float pos_y) {
+        PointParticleEmitter particleEmitter = new PointParticleEmitter(pos_x, pos_y);
+
+        final ParticleSystem particleSystem = new SpriteParticleSystem(particleEmitter, 100, 100, 15,
+                mResourceManager.mWaterExp, mVertexBufferObjectManager);
+
+        particleSystem.addParticleInitializer(new VelocityParticleInitializer<Sprite>( - 150, 50, - 225, 0));
+        particleSystem.addParticleModifier(new AlphaParticleModifier<Sprite>(0, 0.6f, 1f, 0));
+        particleSystem.addParticleModifier(new ScaleParticleModifier<Sprite>(0, 0.6f, 1.5f, 0.8f));
+
+        attachChild(particleSystem);
+        registerUpdateHandler(new TimerHandler(1.0f, new ITimerCallback() {
+            @Override
+            public void onTimePassed(final TimerHandler pTimerHandler) {
+                particleSystem.setIgnoreUpdate(true);
+                particleSystem.detachSelf();
+                GameScene.this.sortChildren();
+                GameScene.this.unregisterUpdateHandler(pTimerHandler);
+            }
+        }));
     }
 
     @Override
