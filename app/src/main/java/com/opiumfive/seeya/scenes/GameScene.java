@@ -4,8 +4,12 @@ package com.opiumfive.seeya.scenes;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.Manifold;
 import com.opiumfive.seeya.PhysicsHelper;
 import com.opiumfive.seeya.managers.SceneManager;
 import com.opiumfive.seeya.pools.IslandPool;
@@ -13,20 +17,33 @@ import com.opiumfive.seeya.pools.MinePool;
 import com.opiumfive.seeya.units.Island;
 import com.opiumfive.seeya.units.Kit;
 import com.opiumfive.seeya.units.Mine;
+
+import org.andengine.engine.camera.hud.HUD;
 import org.andengine.engine.handler.IUpdateHandler;
+import org.andengine.engine.handler.timer.ITimerCallback;
+import org.andengine.engine.handler.timer.TimerHandler;
+import org.andengine.entity.particle.ParticleSystem;
+import org.andengine.entity.particle.SpriteParticleSystem;
+import org.andengine.entity.particle.emitter.PointParticleEmitter;
+import org.andengine.entity.particle.initializer.VelocityParticleInitializer;
+import org.andengine.entity.particle.modifier.AlphaParticleModifier;
+import org.andengine.entity.particle.modifier.ScaleParticleModifier;
+import org.andengine.entity.scene.CameraScene;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.AutoParallaxBackground;
 import org.andengine.entity.scene.background.ParallaxBackground;
 import org.andengine.entity.shape.IShape;
-import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.text.Text;
+import org.andengine.entity.text.TextOptions;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.extension.physics.box2d.PhysicsConnector;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.input.touch.TouchEvent;
+import org.andengine.util.HorizontalAlign;
 
 
 public class GameScene extends BaseScene implements IOnSceneTouchListener {
@@ -46,7 +63,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private static final int ROTATE_RIGHT = 2;
     private static final float GRAVITY = 7f;
 
-    private final float KIT_WATER_LEVEL = SCREEN_HEIGHT - mResourceManager.mKitSwimAnim.getHeight() / 2 - 188 - 10;
+    private static final String KIT_LABEL = "kit";
+    private static final String ISLAND_LABEL = "island_1";
+    private static final String MINE_LABEL = "mine";
 
     private boolean mUsualJump = true;
     private boolean mDiveMade = false;
@@ -71,6 +90,11 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
     private int mRotate = 0; // 0 - no, 1 - left, 2 - right
     private float mKitAngle = 0f;
 
+    private Text mHudText;
+    private int mScore;
+    private CameraScene mGameOverScene;
+    private boolean mExplosionShown;
+
     @Override
     public void createScene() {
 
@@ -90,6 +114,39 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         autoParallaxBackground.attachParallaxEntity(new ParallaxBackground.ParallaxEntity( - 14f, new Sprite(0, 50, mResourceManager.mParallaxLayerBack, mVertexBufferObjectManager)));
         setBackground(autoParallaxBackground);
 
+         /*
+         * INIT HUD
+         */
+
+        HUD gameHUD = new HUD();
+        mHudText = new Text(SCREEN_WIDTH / 2f, 15f, mResourceManager.mFont2, "0123456789", new TextOptions(HorizontalAlign.LEFT), mVertexBufferObjectManager);
+        mHudText.setText(String.valueOf(mScore));
+        mHudText.setX((SCREEN_WIDTH - mHudText.getWidth()) / 2);
+        mHudText.setVisible(true);
+        gameHUD.attachChild(mHudText);
+        mCamera.setHUD(gameHUD);
+
+        /*
+         * INIT GAMEOVER CAMERA SCENE
+         */
+
+        mGameOverScene = new CameraScene(mCamera);
+        Text gameOverText = new Text(SCREEN_WIDTH / 2f, SCREEN_HEIGHT / 2f, mResourceManager.mFont2, "GAME OVER", new TextOptions(HorizontalAlign.LEFT), mVertexBufferObjectManager);
+        gameOverText.setX((SCREEN_WIDTH - gameOverText.getWidth()) / 2);
+        gameOverText.setY((SCREEN_HEIGHT - gameOverText.getHeight()) / 2);
+        mGameOverScene.attachChild(gameOverText);
+        mGameOverScene.setBackgroundEnabled(false);
+        mGameOverScene.setOnSceneTouchListener(new IOnSceneTouchListener() {
+
+            @Override
+            public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
+                if (pSceneTouchEvent.isActionUp()) {
+                    clearChildScene();
+                    GameScene.this.onBackKeyPressed();
+                }
+                return true;
+            }
+        });
         /*
          *  INIT SPRITES
          */
@@ -100,8 +157,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         mKit.setPosition(KIT_X_OFFSET, SCREEN_HEIGHT - mResourceManager.mKitSwimAnim.getHeight() / 2 - 188 - 10);
 
         mWaterAlpha = new Sprite(0, SCREEN_HEIGHT - mResourceManager.mWaterAlpha.getHeight(), mResourceManager.mWaterAlpha, mVertexBufferObjectManager);
-        attachChild(mWaterAlpha);
         mWaterAlpha.setZIndex(1);
+        attachChild(mWaterAlpha);
         mWaterAlpha.setScaleCenterY( - mWaterAlpha.getHeight() / 4f);
 
         /*
@@ -112,15 +169,16 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         mMinePool.batchAllocatePoolItems(10);
         mMine = mMinePool.obtainPoolItem();
         mMine.animate(ANIMATION_FRAME_DURATION);
-        attachChild(mMine);
         mMine.setZIndex(0);
+        attachChild(mMine);
 
         mIslandPool = new IslandPool(mResourceManager.mIsland1, mVertexBufferObjectManager);
         mIslandPool.batchAllocatePoolItems(10);
         mIsland = mIslandPool.obtainPoolItem();
-        attachChild(mIsland);
         mIsland.setZIndex(0);
-        sortChildren();
+        attachChild(mIsland);
+
+        sortChildren(); //TODO find a way to remove it
 
         /*
          * INIT PHYSICS
@@ -133,19 +191,19 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
         final FixtureDef kitFixtureDef = PhysicsFactory.createFixtureDef(0f, 0.1f, 0f);
         final Body kitBody = PhysicsFactory.createCircleBody(mPhysicsWorld, 90f, 50f, 35f, BodyDef.BodyType.DynamicBody, kitFixtureDef);
-        kitBody.setUserData("kit");
+        kitBody.setUserData(KIT_LABEL);
         mKit.setUserData(kitBody);
         mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mKit, kitBody, true, false));
 
         final FixtureDef mineFixtureDef = PhysicsFactory.createFixtureDef(1f, 0f, 0f);
         final Body mineBody = PhysicsFactory.createCircleBody(mPhysicsWorld, mMine, BodyDef.BodyType.KinematicBody, mineFixtureDef);
-        mineBody.setUserData("mine");
+        mineBody.setUserData(MINE_LABEL);
         mMine.setUserData(mineBody);
         mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mMine, mineBody, true, false));
         mineBody.setLinearVelocity( - mGameSpeed, 0f);
 
         mPhysicsHelper.open(mActivity, SHAPES_FILE);
-        final Body body = mPhysicsHelper.createBody("island_1", mIsland, mPhysicsWorld);
+        final Body body = mPhysicsHelper.createBody(ISLAND_LABEL, mIsland, mPhysicsWorld);
         mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mIsland, body, true, false));
         body.setLinearVelocity( - mGameSpeed, 0f);
 
@@ -168,6 +226,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
                 /* CHANGE OF GAME SPEED */
                 if (mEngine.getSecondsElapsedTotal() - mLastSecs > 1f) {
+                    mHudText.setText(String.valueOf(++mScore));
                     mGameSpeed += 0.1f;
                     autoParallaxBackground.setParallaxChangePerSecond(mGameSpeed);
                     mLastSecs = mEngine.getSecondsElapsedTotal();
@@ -209,6 +268,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                 if (Math.abs(y - WATER_LEVEL) >= WATER_LEVEL_JUMP_HEIGHT) {
                     if (y > WATER_LEVEL) {
                         setGravity(((mDiveMade && mUsualJump) || (mUpMade && !mUsualJump)) ? - GRAVITY * 4 : - GRAVITY);
+                        if (!mExplosionShown &&((mDiveMade && mUsualJump) || (mUpMade && !mUsualJump))) {
+                            float strength = 0.5f;
+                            if (!mUsualJump) strength += mDiveFactor / UPDOWN_MAX_SEC_DIFFERENCE / 4f;
+                            makeWaterExplosion(mKit.getX() + mKit.getWidth() / 2, mKit.getY() + mKit.getHeight() / 3, strength);
+                            mExplosionShown = true;
+                        }
                         mKit.animate(ANIMATION_FRAME_DURATION);
                     } else {
                         mKit.stopAnimation(7);
@@ -220,11 +285,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                         mDiveMade = true;
                     }
                 } else {
-                    if (y > WATER_LEVEL - WATER_LEVEL_JUMP_HEIGHT && ((mDiveMade && mUsualJump) || (mDiveMade && mUpMade && !mUsualJump))) {
+                    if (y > WATER_LEVEL - WATER_LEVEL_JUMP_HEIGHT && ((mDiveMade && mUsualJump) || (mDiveMade && mUpMade))) {
                         jumpSprite(mKit, 0);
                         if (mDiveMade) mDiveMade = false;
                         if (mUpMade) mUpMade = false;
                     }
+
                     setGravity(0);
                 }
 
@@ -243,7 +309,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                         break;
                 }
 
-
                 /* POOLS */
                 if (mMine.getX() < - SCREEN_WIDTH * 2f) {
                     freeBody(mMine);
@@ -254,15 +319,16 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
                     mMine = mMinePool.obtainPoolItem();
                     mMine.animate(ANIMATION_FRAME_DURATION);
-                    attachChild(mMine);
                     mMine.setZIndex(0);
+                    attachChild(mMine);
+
                     final FixtureDef mineFixtureDef = PhysicsFactory.createFixtureDef(1f, 0f, 0f);
                     final Body mineBody = PhysicsFactory.createCircleBody(mPhysicsWorld, mMine, BodyDef.BodyType.KinematicBody, mineFixtureDef);
-                    mineBody.setUserData("mine");
+                    mineBody.setUserData(MINE_LABEL);
                     mMine.setUserData(mineBody);
                     mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mMine, mineBody, true, false));
                     mineBody.setLinearVelocity( - mGameSpeed, 0f);
-                    sortChildren();
+                    sortChildren(); //TODO find a way to remove it
                 }   // ===============================> NEED HARD REFACTOR
                 if (mIsland.getX() < - SCREEN_WIDTH * 2f) {
                     freeBody(mIsland);
@@ -271,12 +337,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                     mIslandPool.shufflePoolItems();
 
                     mIsland = mIslandPool.obtainPoolItem();
-                    attachChild(mIsland);
                     mIsland.setZIndex(0);
-                    Body body = mPhysicsHelper.createBody("island_1", mIsland, mPhysicsWorld);
+                    attachChild(mIsland);
+                    Body body = mPhysicsHelper.createBody(ISLAND_LABEL, mIsland, mPhysicsWorld);
                     mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(mIsland, body, true, false));
                     body.setLinearVelocity( - mGameSpeed, 0f);
-                    sortChildren();
+                    sortChildren(); //TODO find a way to remove it
                 }
             }
         });
@@ -344,15 +410,68 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
         final Vector2 velocity = Vector2Pool.obtain(faceBody.getLinearVelocity().x, pY);
         faceBody.setLinearVelocity(velocity);
         Vector2Pool.recycle(velocity);
+        mExplosionShown = false;
     }
 
     private ContactListener createContactListener() {
-        //TODO implement
-        return null;
+        ContactListener contactListener = new ContactListener() {
+            @Override
+            public void beginContact(Contact pContact) {
+                final Fixture fixtureA = pContact.getFixtureA();
+                final Body bodyA = fixtureA.getBody();
+                final String userDataA = (String) bodyA.getUserData();
+
+                final Fixture fixtureB = pContact.getFixtureB();
+                final Body bodyB = fixtureB.getBody();
+                final String userDataB = (String) bodyB.getUserData();
+
+                if ((MINE_LABEL.equals(userDataA) && KIT_LABEL.equals(userDataB)) || (KIT_LABEL.equals(userDataA) && MINE_LABEL.equals(userDataB))) {
+                    mHudText.setVisible(false);
+                    setChildScene(mGameOverScene, false, true, true);
+                }
+            }
+
+            @Override
+            public void endContact(Contact contact) {
+            }
+
+            @Override
+            public void preSolve(Contact contact, Manifold oldManifold) {
+            }
+
+            @Override
+            public void postSolve(Contact contact, ContactImpulse impulse) {
+            }
+
+        };
+        return contactListener;
+    }
+
+    private void makeWaterExplosion(float pos_x, float pos_y, float strength) {
+        PointParticleEmitter particleEmitter = new PointParticleEmitter(pos_x, pos_y);
+
+        final ParticleSystem particleSystem = new SpriteParticleSystem(particleEmitter, 100, 100, 25,
+                mResourceManager.mWaterExp, mVertexBufferObjectManager);
+
+        particleSystem.addParticleInitializer(new VelocityParticleInitializer<Sprite>( - 150 * strength, 120 * strength, - 225 * strength, 20 * strength));
+        particleSystem.addParticleModifier(new AlphaParticleModifier<Sprite>(0f, 1f, 1f, 0f));
+        particleSystem.addParticleModifier(new ScaleParticleModifier<Sprite>(0f, 1f, 1.5f, 0.8f));
+
+        attachChild(particleSystem);
+        registerUpdateHandler(new TimerHandler(1.0f, new ITimerCallback() {
+            @Override
+            public void onTimePassed(final TimerHandler pTimerHandler) {
+                particleSystem.setIgnoreUpdate(true);
+                particleSystem.detachSelf();
+                GameScene.this.sortChildren();
+                GameScene.this.unregisterUpdateHandler(pTimerHandler);
+            }
+        }));
     }
 
     @Override
     public void onBackKeyPressed() {
+        mHudText.setVisible(false);
         mCameraZoomFactor = 1.0f;
         mCamera.setZoomFactor(mCameraZoomFactor);
         mSceneManager.setScene(SceneManager.SceneType.SCENE_MENU);

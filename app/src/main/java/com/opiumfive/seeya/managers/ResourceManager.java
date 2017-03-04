@@ -34,6 +34,7 @@ public class ResourceManager {
 
     public TiledTextureRegion mKitSwimAnim;
     public ITextureRegion mWaterAlpha;
+    public ITextureRegion mWaterExp;
     public TiledTextureRegion mMineSwimAnim;
 
     public Font mFont1;
@@ -88,6 +89,7 @@ public class ResourceManager {
 
         mBitmapTextureAtlas = new BitmapTextureAtlas(mActivity.getTextureManager(), 1024, 1024, TextureOptions.BILINEAR);
         mWaterAlpha = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "theme1/water.png", 0, 0);
+        mWaterExp = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, mActivity, "exp.png", 0, 188);
         mBitmapTextureAtlas.load();
 
         mKitAnimAtlas = new BitmapTextureAtlas(mActivity.getTextureManager(), 1024, 1024, TextureOptions.BILINEAR);

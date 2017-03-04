@@ -8,6 +8,7 @@ import com.opiumfive.seeya.managers.SceneManager;
 import org.andengine.entity.scene.background.AutoParallaxBackground;
 import org.andengine.entity.scene.background.ParallaxBackground;
 import org.andengine.entity.scene.menu.MenuScene;
+import org.andengine.entity.scene.menu.animator.SlideMenuAnimator;
 import org.andengine.entity.scene.menu.item.IMenuItem;
 import org.andengine.entity.scene.menu.item.TextMenuItem;
 import org.andengine.entity.scene.menu.item.decorator.ColorMenuItemDecorator;
@@ -25,6 +26,9 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
     protected static final int MENU_RATE = 1;
     protected static final int MENU_EXTRAS = 2;
     protected static final int MENU_QUIT = 3;
+
+    protected static final int MENU_READ = 4;
+    protected static final int MENU_MORE = 5;
 
     protected MenuScene mMenuScene;
     private MenuScene mSubMenuScene;
@@ -69,6 +73,16 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
                 mActivity.finish();
                 return true;
 
+            case MENU_READ:
+                mSubMenuScene.back();
+                //TODO implement
+                return true;
+
+            case MENU_MORE:
+                mSubMenuScene.back();
+                //TODO implement
+                return true;
+
             default:
                 return false;
         }
@@ -102,8 +116,23 @@ public class MainMenuScene extends BaseScene implements MenuScene.IOnMenuItemCli
     }
 
     protected MenuScene createSubMenuScene() {
-        //TODO implement
-        return null;
+        final MenuScene subMenuScene = new MenuScene(mCamera);
+
+        final IMenuItem moreMenuItem = new ColorMenuItemDecorator(new TextMenuItem(MENU_MORE, mResourceManager.mFont3, "More Apps", mVertexBufferObjectManager), new Color(1,1,1), new Color(0.0f, 0.2f, 0.4f));
+        moreMenuItem.setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        subMenuScene.addMenuItem(moreMenuItem);
+
+        final IMenuItem readMenuItem = new ColorMenuItemDecorator(new TextMenuItem(MENU_READ, mResourceManager.mFont3, "Read Tutorial", mVertexBufferObjectManager), new Color(1,1,1), new Color(0.0f, 0.2f, 0.4f));
+        readMenuItem.setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        subMenuScene.addMenuItem(readMenuItem);
+
+        subMenuScene.setMenuAnimator(new SlideMenuAnimator());
+        subMenuScene.buildAnimations();
+
+        subMenuScene.setBackgroundEnabled(false);
+
+        subMenuScene.setOnMenuItemClickListener(this);
+        return subMenuScene;
     }
 
     @Override
