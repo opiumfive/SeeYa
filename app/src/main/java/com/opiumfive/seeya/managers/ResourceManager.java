@@ -98,7 +98,7 @@ public class ResourceManager {
         mMineSwimAnim = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(mMineAnimAtlas, mActivity, "mine.png", 0, 0, 5, 5);
         mMineAnimAtlas.load();
 
-        mIslandsAtlas = new BitmapTextureAtlas(mActivity.getTextureManager(), 1024, 1024, TextureOptions.BILINEAR);
+        mIslandsAtlas = new BitmapTextureAtlas(mActivity.getTextureManager(), 2048, 1024, TextureOptions.BILINEAR);
         mIsland1 = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mIslandsAtlas, mActivity, "island_1.png", 0, 0);
         mIslandsAtlas.load();
     }

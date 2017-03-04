@@ -9,7 +9,7 @@ import static com.opiumfive.seeya.GameActivity.CAMERA_WIDTH;
 public class Island extends Sprite {
 
     private static final float DEMO_POSITION = 2f * CAMERA_WIDTH;
-    private static final float ISLAND_WATER_LEVEL = 226;
+    private static final float ISLAND_WATER_LEVEL = -200;
 
     public Island(ITextureRegion pTextureRegion, VertexBufferObjectManager pVertexBufferObjectManager) {
         super(DEMO_POSITION, ISLAND_WATER_LEVEL, pTextureRegion, pVertexBufferObjectManager);
