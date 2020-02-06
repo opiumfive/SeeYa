@@ -369,7 +369,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
             if (pSceneTouchEvent.isActionDown()) {
                 mSecsTotal = mEngine.getSecondsElapsedTotal();
-                if (Math.abs(y - WATER_LEVEL) > WATER_LEVEL_JUMP_HEIGHT * 1.3 && y < WATER_LEVEL) {
+                /*if (Math.abs(y - WATER_LEVEL) > WATER_LEVEL_JUMP_HEIGHT * 1.3 && y < WATER_LEVEL) {
                     if (pSceneTouchEvent.getX() < SCREEN_WIDTH / 2f) {
                         mRotate = ROTATE_LEFT;
                     } else {
@@ -377,7 +377,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
                     }
                 } else {
                     mRotate = ROTATE_NO;
-                }
+                }*/
                 return true;
             }
 
